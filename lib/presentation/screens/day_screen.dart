@@ -5,72 +5,61 @@ import 'package:uuid/uuid.dart';
 
 import '../../application/profile/profile_controller.dart';
 import '../../application/tasks/task_controller.dart';
-import '../../domain/logic/leveling.dart';
 import '../../domain/models/task.dart';
+
+final nowProvider = StreamProvider<DateTime>((ref) async* {
+  // Emit immediately, then every 30 seconds
+  yield DateTime.now();
+  yield* Stream<DateTime>.periodic(
+    const Duration(seconds: 30),
+    (_) => DateTime.now(),
+  );
+});
+
+bool isSameDay(DateTime a, DateTime b) =>
+    a.year == b.year && a.month == b.month && a.day == b.day;
 
 class DayScreen extends ConsumerWidget {
   const DayScreen({super.key});
+
+  static const _timeStepMinutes = 5;
+  static const _minTaskMinutes = 5;
 
   static const _hourHeight = 64.0; // pixels per hour (tweak later)
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tasksAsync = ref.watch(taskControllerProvider);
-    final profileAsync = ref.watch(profileControllerProvider);
 
-    final now = DateTime.now();
+    final nowAsync = ref.watch(nowProvider);
+    final now = nowAsync.value ?? DateTime.now();
     final day = DateTime(now.year, now.month, now.day);
     final dateLabel = DateFormat(
       'EEEE, d MMM',
     ).format(day); // e.g. Thursday, 15 Jan
 
+    const _gridLineOffset = 10.0;
+
     return Scaffold(
-      appBar: AppBar(title: Text(dateLabel)),
+      appBar: AppBar(
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(dateLabel),
+            SizedBox(width: 6),
+            Text(now.year.toString(), style: TextStyle(fontSize: 16)),
+          ],
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddTaskSheet(context, ref, day),
         child: const Icon(Icons.add),
       ),
       body: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+        padding: const EdgeInsets.fromLTRB(4, 4, 4, 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            profileAsync.when(
-              data: (profile) {
-                final computed = computeLevelFromTotalXp(profile.totalXp);
-                final progress = computed.xpIntoLevel / computed.xpForNext;
-
-                return Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    color: Theme.of(context).colorScheme.surface,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Level ${computed.level}',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: 8),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(999),
-                        child: LinearProgressIndicator(
-                          value: progress.clamp(0.0, 1.0),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        '${computed.xpIntoLevel} / ${computed.xpForNext} XP to next level',
-                      ),
-                    ],
-                  ),
-                );
-              },
-              loading: () => const LinearProgressIndicator(),
-              error: (e, _) => Text('Profile error: $e'),
-            ),
             const SizedBox(height: 12),
             Expanded(
               child: tasksAsync.when(
@@ -81,7 +70,9 @@ class DayScreen extends ConsumerWidget {
 
                   return _Timeline(
                     day: day,
+                    now: now,
                     hourHeight: _hourHeight,
+                    gridLineOffset: _gridLineOffset,
                     tasks: dayTasks,
                     onToggleComplete: (task, checked) async {
                       final updated = task.copyWith(
@@ -164,12 +155,17 @@ class DayScreen extends ConsumerWidget {
                               picked.hour,
                               picked.minute,
                             );
-                            final snapped = _roundTo30(nextStart);
+                            final snapped = _roundToStep(
+                              nextStart,
+                              _timeStepMinutes,
+                            );
 
                             setState(() {
                               start = snapped;
                               if (!end.isAfter(start)) {
-                                end = start.add(const Duration(minutes: 30));
+                                end = start.add(
+                                  const Duration(minutes: _minTaskMinutes),
+                                );
                               }
                             });
                           },
@@ -190,12 +186,17 @@ class DayScreen extends ConsumerWidget {
                               picked.hour,
                               picked.minute,
                             );
-                            final snapped = _roundTo30(nextEnd);
+                            final snapped = _roundToStep(
+                              nextEnd,
+                              _timeStepMinutes,
+                            );
 
                             setState(() {
                               end = snapped;
                               if (!end.isAfter(start)) {
-                                end = start.add(const Duration(minutes: 30));
+                                end = start.add(
+                                  const Duration(minutes: _minTaskMinutes),
+                                );
                               }
                             });
                           },
@@ -368,11 +369,12 @@ class DayScreen extends ConsumerWidget {
 
     // Default span: now rounded to nearest 30 min → +30 min
     final now = DateTime.now();
-    final rounded = _roundTo30(
+    final rounded = _roundToStep(
       DateTime(day.year, day.month, day.day, now.hour, now.minute),
+      _timeStepMinutes,
     );
     var start = rounded;
-    var end = rounded.add(const Duration(minutes: 30));
+    var end = rounded.add(const Duration(minutes: _minTaskMinutes));
 
     await showModalBottomSheet<void>(
       context: context,
@@ -417,12 +419,17 @@ class DayScreen extends ConsumerWidget {
                               picked.hour,
                               picked.minute,
                             );
-                            final snapped = _roundTo30(nextStart);
+                            final snapped = _roundToStep(
+                              nextStart,
+                              _timeStepMinutes,
+                            );
 
                             setState(() {
                               start = snapped;
                               if (!end.isAfter(start)) {
-                                end = start.add(const Duration(minutes: 30));
+                                end = start.add(
+                                  const Duration(minutes: _minTaskMinutes),
+                                );
                               }
                             });
                           },
@@ -443,12 +450,17 @@ class DayScreen extends ConsumerWidget {
                               picked.hour,
                               picked.minute,
                             );
-                            final snapped = _roundTo30(nextEnd);
+                            final snapped = _roundToStep(
+                              nextEnd,
+                              _timeStepMinutes,
+                            );
 
                             setState(() {
                               end = snapped;
                               if (!end.isAfter(start)) {
-                                end = start.add(const Duration(minutes: 30));
+                                end = start.add(
+                                  const Duration(minutes: _minTaskMinutes),
+                                );
                               }
                             });
                           },
@@ -506,21 +518,20 @@ class DayScreen extends ConsumerWidget {
     );
   }
 
-  static DateTime _roundTo30(DateTime dt) {
-    final minute = dt.minute;
-    final snapped = (minute / 30).round() * 30;
-    var rounded = DateTime(
-      dt.year,
-      dt.month,
-      dt.day,
-      dt.hour,
-      0,
-    ).add(Duration(minutes: snapped));
-    // handle 60 snap
-    if (rounded.minute == 60) {
-      rounded = DateTime(dt.year, dt.month, dt.day, dt.hour + 1, 0);
+  static DateTime _roundToStep(DateTime dt, int stepMinutes) {
+    final total = dt.hour * 60 + dt.minute;
+    final snapped = (total / stepMinutes).round() * stepMinutes;
+
+    var h = snapped ~/ 60;
+    var m = snapped % 60;
+
+    // handle 24:00 edge case
+    if (h >= 24) {
+      h = 23;
+      m = 59;
     }
-    return rounded;
+
+    return DateTime(dt.year, dt.month, dt.day, h, m);
   }
 
   static bool _isSameDay(DateTime a, DateTime b) =>
@@ -530,27 +541,28 @@ class DayScreen extends ConsumerWidget {
 class _Timeline extends StatelessWidget {
   const _Timeline({
     required this.day,
+    required this.now,
     required this.hourHeight,
+    required this.gridLineOffset,
     required this.tasks,
     required this.onToggleComplete,
     required this.onEdit,
   });
 
   final DateTime day;
+  final DateTime now;
   final double hourHeight;
+  final double gridLineOffset;
   final List<Task> tasks;
   final Future<void> Function(Task task, bool checked) onToggleComplete;
   final void Function(Task task) onEdit;
-
-  static const _gridLineOffset =
-      10.0; // where the hour divider is drawn within the hour row
 
   @override
   Widget build(BuildContext context) {
     final totalHeight = 24 * hourHeight;
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(4),
       child: Container(
         color: Theme.of(context).colorScheme.surface,
         child: SingleChildScrollView(
@@ -563,10 +575,12 @@ class _Timeline extends StatelessWidget {
                   _HourLine(
                     hour: h,
                     top: h * hourHeight,
-                    lineOffset: _gridLineOffset,
+                    lineOffset: gridLineOffset,
                   ),
                 for (var h = 0; h < 24; h++)
-                  _HalfHourLine(top: h * hourHeight + hourHeight / 2),
+                  _HalfHourLine(
+                    top: h * hourHeight + gridLineOffset + hourHeight / 2,
+                  ),
                 // tasks
                 for (final t in tasks)
                   _TaskBlock(
@@ -574,6 +588,12 @@ class _Timeline extends StatelessWidget {
                     hourHeight: hourHeight,
                     onToggleComplete: onToggleComplete,
                     onEdit: onEdit,
+                  ),
+                if (isSameDay(now, day))
+                  _CurrentTimeLine(
+                    now: now,
+                    hourHeight: hourHeight,
+                    gridLineOffset: gridLineOffset,
                   ),
               ],
             ),
@@ -591,7 +611,7 @@ class _HalfHourLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      left: 76,
+      left: 56,
       right: 0,
       top: top,
       child: Divider(
@@ -655,6 +675,63 @@ class _HourLine extends StatelessWidget {
   }
 }
 
+class _CurrentTimeLine extends StatelessWidget {
+  const _CurrentTimeLine({
+    required this.now,
+    required this.hourHeight,
+    required this.gridLineOffset,
+  });
+
+  final DateTime now;
+  final double hourHeight;
+  final double gridLineOffset;
+
+  @override
+  Widget build(BuildContext context) {
+    final minutes = now.hour * 60 + now.minute;
+    var y = (minutes / 60.0) * hourHeight + gridLineOffset;
+
+    // Clamp so it doesn't render outside the timeline
+    y = y.clamp(0.0, 24 * hourHeight);
+    final dotColor = Theme.of(context).colorScheme.primary;
+    final lineColor = Colors.red;
+
+    return Positioned(
+      left: 0,
+      right: 0,
+      top: y,
+      child: IgnorePointer(
+        child: Row(
+          children: [
+            const SizedBox(width: 60), // align with hour label column
+            // dot
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: dotColor,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 6),
+            // line
+            Expanded(
+              child: Container(
+                height: 2,
+                decoration: BoxDecoration(
+                  color: lineColor,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+            ),
+            const SizedBox(width: 2),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _TaskBlock extends StatelessWidget {
   const _TaskBlock({
     required this.task,
@@ -679,10 +756,11 @@ class _TaskBlock extends StatelessWidget {
     final duration = end.difference(start).inMinutes.clamp(15, 24 * 60);
     final top = (startMinutes / 60.0) * hourHeight + _gridLineOffset;
     final rawHeight = (duration / 60.0) * hourHeight;
-    final height = rawHeight.clamp(44.0, 9999.0); // min height for content+taps
+    const minVisualHeight = 36.0;
+    final height = rawHeight.clamp(minVisualHeight, 9999.0);
 
-    final left = 58.0; // after hour labels
-    final rightPadding = 4.0;
+    final left = 56.0; // after hour labels
+    final rightPadding = 1.0;
 
     final bg = task.isCompleted
         ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.22)
@@ -696,7 +774,7 @@ class _TaskBlock extends StatelessWidget {
       child: GestureDetector(
         onTap: () => onEdit(task),
         child: Container(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
             color: bg,
             borderRadius: BorderRadius.circular(2),
@@ -715,22 +793,30 @@ class _TaskBlock extends StatelessWidget {
               final showDetails = durationMin >= 60;
 
               if (!showDetails) {
-                // < 60 min: TITLE ONLY (single line) — avoids overflow entirely
+                // < 60 min: title + time/xp in one row, safely truncated
                 return Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Expanded(
+                    Flexible(
                       child: Text(
                         task.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodyMedium,
+                        style: Theme.of(context).textTheme.titleSmall,
                       ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${_fmtTime(start)} – ${_fmtTime(end)} · ${task.xp} XP',
+                      maxLines: 1,
+                      overflow: TextOverflow.clip, // or ellipsis if you prefer
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: Colors.white70),
                     ),
                   ],
                 );
               }
-
               // >= 60 min: TITLE + SUBTITLE
               return Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
