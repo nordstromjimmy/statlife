@@ -14,6 +14,8 @@ class TaskBlock extends StatefulWidget {
     required this.onToggleComplete,
     required this.onEdit,
     required this.onResizeCommit,
+    required this.onResizeStart,
+    required this.onResizeEnd,
   });
 
   final Task task;
@@ -25,6 +27,9 @@ class TaskBlock extends StatefulWidget {
   final Future<void> Function(Task task, bool checked) onToggleComplete;
   final void Function(Task task) onEdit;
   final Future<void> Function(Task updatedTask) onResizeCommit;
+
+  final VoidCallback onResizeStart;
+  final VoidCallback onResizeEnd;
 
   @override
   State<TaskBlock> createState() => _TaskBlockState();
@@ -39,6 +44,8 @@ class _TaskBlockState extends State<TaskBlock> {
   DateTime get _end =>
       _dragEndAt ??
       (widget.task.endAt ?? _start.add(const Duration(minutes: 30)));
+
+  bool _isResizing = false;
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +75,7 @@ class _TaskBlockState extends State<TaskBlock> {
       right: rightPadding,
       height: (height - 4).clamp(40.0, 9999.0),
       child: GestureDetector(
-        onTap: () => widget.onEdit(widget.task),
+        onTap: _isResizing ? null : () => widget.onEdit(widget.task),
         child: Container(
           padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
@@ -94,75 +101,113 @@ class _TaskBlockState extends State<TaskBlock> {
                 left: 0,
                 right: 0,
                 bottom: 0,
-                height: 14,
+                height: 32,
                 child: Align(
                   alignment: Alignment.bottomCenter,
-                  child: GestureDetector(
+                  child: Listener(
                     behavior: HitTestBehavior.opaque,
-                    onPanStart: (_) {
-                      _dragDy = 0.0;
-                      _startEndAt =
-                          widget.task.endAt ??
-                          _start.add(const Duration(minutes: 30));
-                      setState(() {
-                        _dragEndAt = _startEndAt;
-                      });
+                    onPointerDown: (_) {
+                      // 🔒 lock scroll immediately, before gesture arena picks scroll
+                      widget.onResizeStart();
                     },
-                    onPanUpdate: (details) {
-                      _dragDy += details.delta.dy;
-
-                      final deltaMinutes = (_dragDy / widget.hourHeight) * 60.0;
-                      final snappedDelta = _snapMinutes(
-                        deltaMinutes.round(),
-                        widget.timeStepMinutes,
-                      );
-
-                      final proposed = (_startEndAt ?? end).add(
-                        Duration(minutes: snappedDelta),
-                      );
-                      final clamped = _clampEnd(
-                        start: start,
-                        proposedEnd: proposed,
-                        minMinutes: widget.minTaskMinutes,
-                      );
-
-                      setState(() {
-                        _dragEndAt = clamped;
-                      });
+                    onPointerUp: (_) {
+                      // we also unlock here as a safety, actual unlock still happens in pan end/cancel
+                      // (optional)
                     },
-                    onPanEnd: (_) async {
-                      final newEnd = _dragEndAt;
-                      _startEndAt = null;
-                      _dragDy = 0.0;
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onPanStart: (_) {
+                        _dragDy = 0.0;
+                        _startEndAt =
+                            widget.task.endAt ??
+                            _start.add(const Duration(minutes: 30));
+                        setState(() {
+                          _isResizing = true;
+                          _dragEndAt = _startEndAt;
+                        });
+                      },
+                      onPanUpdate: (details) {
+                        _dragDy += details.delta.dy;
+                        final deltaMinutes =
+                            (_dragDy / widget.hourHeight) * 60.0;
+                        final snappedDelta = _snapMinutes(
+                          deltaMinutes.round(),
+                          widget.timeStepMinutes,
+                        );
 
-                      if (newEnd == null) return;
+                        final proposed = (_startEndAt ?? _end).add(
+                          Duration(minutes: snappedDelta),
+                        );
+                        final clamped = _clampEnd(
+                          start: _start,
+                          proposedEnd: proposed,
+                          minMinutes: widget.minTaskMinutes,
+                        );
 
-                      // Commit the resize
-                      final updated = widget.task.copyWith(
-                        endAt: newEnd,
-                        updatedAt: DateTime.now(),
-                      );
+                        setState(() {
+                          _dragEndAt = clamped;
+                        });
+                      },
+                      onPanEnd: (_) async {
+                        final newEnd = _dragEndAt;
+                        _startEndAt = null;
+                        _dragDy = 0.0;
 
-                      // clear preview first for smoothness
-                      setState(() {
-                        _dragEndAt = null;
-                      });
+                        if (newEnd == null) {
+                          setState(() => _isResizing = false);
+                          widget.onResizeEnd();
+                          return;
+                        }
 
-                      await widget.onResizeCommit(updated);
-                    },
-                    onPanCancel: () {
-                      setState(() {
-                        _dragEndAt = null;
-                      });
-                      _startEndAt = null;
-                      _dragDy = 0.0;
-                    },
-                    child: Container(
-                      width: 44,
-                      height: 2,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.35),
-                        borderRadius: BorderRadius.circular(999),
+                        final updated = widget.task.copyWith(
+                          endAt: newEnd,
+                          updatedAt: DateTime.now(),
+                        );
+
+                        setState(() {
+                          _isResizing = false;
+                          _dragEndAt = null;
+                        });
+
+                        widget.onResizeEnd();
+                        await widget.onResizeCommit(updated);
+                      },
+                      onPanCancel: () {
+                        setState(() {
+                          _isResizing = false;
+                          _dragEndAt = null;
+                        });
+                        _startEndAt = null;
+                        _dragDy = 0.0;
+                        widget.onResizeEnd();
+                      },
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 8,
+                        child: Center(
+                          child: Container(
+                            width: 48,
+                            height: 2,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(
+                                alpha: _isResizing ? 0.10 : 0.0,
+                              ),
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: Container(
+                              width: 48,
+                              height: 5,
+                              decoration: BoxDecoration(
+                                color: _isResizing
+                                    ? Theme.of(context).colorScheme.primary
+                                          .withValues(alpha: 0.9)
+                                    : Colors.white.withValues(alpha: 0.35),
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),

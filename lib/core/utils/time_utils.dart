@@ -16,12 +16,17 @@ DateTime roundToStep(DateTime dt, int stepMinutes) {
   return DateTime(dt.year, dt.month, dt.day, h, m);
 }
 
-bool isSameDay(DateTime a, DateTime b) =>
-    a.year == b.year && a.month == b.month && a.day == b.day;
-
 Future<TimeOfDay?> pickTime(BuildContext context, DateTime initial) {
   return showTimePicker(
     context: context,
     initialTime: TimeOfDay(hour: initial.hour, minute: initial.minute),
   );
+}
+
+bool isSameDay(DateTime a, DateTime b) =>
+    a.year == b.year && a.month == b.month && a.day == b.day;
+
+bool isToday(DateTime day) {
+  final now = DateTime.now();
+  return day.year == now.year && day.month == now.month && day.day == now.day;
 }

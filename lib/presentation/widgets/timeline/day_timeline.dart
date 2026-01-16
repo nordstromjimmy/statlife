@@ -6,7 +6,7 @@ import 'current_timeline.dart';
 import 'hour_lines.dart';
 import 'task_block.dart';
 
-class Timeline extends StatelessWidget {
+class Timeline extends StatefulWidget {
   const Timeline({
     super.key,
     required this.day,
@@ -29,14 +29,34 @@ class Timeline extends StatelessWidget {
   final Future<void> Function(Task updatedTask) onResizeCommit;
 
   @override
+  State<Timeline> createState() => _TimelineState();
+}
+
+class _TimelineState extends State<Timeline> {
+  bool _scrollEnabled = true;
+
+  void _lockScroll() {
+    if (!_scrollEnabled) return;
+    setState(() => _scrollEnabled = false);
+  }
+
+  void _unlockScroll() {
+    if (_scrollEnabled) return;
+    setState(() => _scrollEnabled = true);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final totalHeight = 24 * hourHeight;
+    final totalHeight = 24 * widget.hourHeight;
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(4),
       child: Container(
         color: Theme.of(context).colorScheme.surface,
         child: SingleChildScrollView(
+          physics: _scrollEnabled
+              ? const BouncingScrollPhysics()
+              : const NeverScrollableScrollPhysics(),
           child: SizedBox(
             height: totalHeight,
             child: Stack(
@@ -45,30 +65,37 @@ class Timeline extends StatelessWidget {
                 for (var h = 0; h <= 24; h++)
                   HourLine(
                     hour: h,
-                    top: h * hourHeight,
-                    lineOffset: gridLineOffset,
+                    top: h * widget.hourHeight,
+                    lineOffset: widget.gridLineOffset,
                   ),
                 for (var h = 0; h < 24; h++)
                   HalfHourLine(
-                    top: h * hourHeight + gridLineOffset + hourHeight / 2,
+                    top:
+                        h * widget.hourHeight +
+                        widget.gridLineOffset +
+                        widget.hourHeight / 2,
                   ),
+
                 // tasks
-                for (final t in tasks)
+                for (final t in widget.tasks)
                   TaskBlock(
                     task: t,
-                    hourHeight: hourHeight,
-                    gridLineOffset: gridLineOffset,
+                    hourHeight: widget.hourHeight,
+                    gridLineOffset: widget.gridLineOffset,
                     timeStepMinutes: timeStepMinutes,
                     minTaskMinutes: minTaskMinutes,
-                    onToggleComplete: onToggleComplete,
-                    onEdit: onEdit,
-                    onResizeCommit: onResizeCommit,
+                    onToggleComplete: widget.onToggleComplete,
+                    onEdit: widget.onEdit,
+                    onResizeCommit: widget.onResizeCommit,
+                    onResizeStart: _lockScroll,
+                    onResizeEnd: _unlockScroll,
                   ),
-                if (isSameDay(now, day))
+
+                if (isSameDay(widget.now, widget.day))
                   CurrentTimeLine(
-                    now: now,
-                    hourHeight: hourHeight,
-                    gridLineOffset: gridLineOffset,
+                    now: widget.now,
+                    hourHeight: widget.hourHeight,
+                    gridLineOffset: widget.gridLineOffset,
                   ),
               ],
             ),
