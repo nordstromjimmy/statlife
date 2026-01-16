@@ -30,9 +30,8 @@ class DayScreen extends ConsumerWidget {
     final nowAsync = ref.watch(nowProvider);
     final now = nowAsync.value ?? DateTime.now();
     final day = DateTime(now.year, now.month, now.day);
-    final dateLabel = DateFormat(
-      'EEEE, d MMM',
-    ).format(day); // e.g. Thursday, 15 Jan
+    // Date in appbar formatted as "Friday, 16 Jan"
+    final dateLabel = DateFormat('EEEE, d MMM').format(day);
 
     const gridLineOffset = 10.0;
 
@@ -47,9 +46,12 @@ class DayScreen extends ConsumerWidget {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => showAddTaskSheet(context, ref, day),
-        child: const Icon(Icons.add),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 10.0),
+        child: FloatingActionButton(
+          onPressed: () => showAddTaskSheet(context, ref, day),
+          child: const Icon(Icons.add),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(4, 4, 4, 12),

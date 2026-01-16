@@ -1,6 +1,25 @@
 import 'package:go_router/go_router.dart';
+
 import '../presentation/screens/day_screen.dart';
+import '../presentation/screens/home_shell.dart';
+import '../presentation/screens/plan_screen.dart';
+import '../presentation/screens/profile_screen.dart';
 
 final router = GoRouter(
-  routes: [GoRoute(path: '/', builder: (context, state) => const DayScreen())],
+  initialLocation: '/day',
+  routes: [
+    ShellRoute(
+      builder: (context, state, child) {
+        return HomeShell(location: state.uri.toString(), child: child);
+      },
+      routes: [
+        GoRoute(path: '/day', builder: (context, state) => const DayScreen()),
+        GoRoute(path: '/plan', builder: (context, state) => const PlanScreen()),
+        GoRoute(
+          path: '/profile',
+          builder: (context, state) => const ProfileScreen(),
+        ),
+      ],
+    ),
+  ],
 );
