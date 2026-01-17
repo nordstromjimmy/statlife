@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../data/datasources/local/local_goal_repository.dart';
 import '../data/datasources/local/local_store.dart';
 import '../data/datasources/local/local_task_repository.dart';
 import '../data/datasources/local/local_profile_repository.dart';
@@ -21,4 +22,9 @@ final taskRepositoryProvider = Provider<TaskRepository>((ref) {
 
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
   return LocalProfileRepository(ref.watch(localStoreProvider));
+});
+
+final localGoalRepositoryProvider = Provider<LocalGoalRepository>((ref) {
+  final store = ref.read(localStoreProvider);
+  return LocalGoalRepository(store);
 });

@@ -33,6 +33,7 @@ mixin _$Task {
 
   /// XP granted when completed
   int get xp => throw _privateConstructorUsedError;
+  String? get goalId => throw _privateConstructorUsedError;
 
   /// null = not completed
   DateTime? get completedAt => throw _privateConstructorUsedError;
@@ -60,6 +61,7 @@ abstract class $TaskCopyWith<$Res> {
     DateTime? startAt,
     DateTime? endAt,
     int xp,
+    String? goalId,
     DateTime? completedAt,
     DateTime createdAt,
     DateTime updatedAt,
@@ -87,6 +89,7 @@ class _$TaskCopyWithImpl<$Res, $Val extends Task>
     Object? startAt = freezed,
     Object? endAt = freezed,
     Object? xp = null,
+    Object? goalId = freezed,
     Object? completedAt = freezed,
     Object? createdAt = null,
     Object? updatedAt = null,
@@ -117,6 +120,10 @@ class _$TaskCopyWithImpl<$Res, $Val extends Task>
                 ? _value.xp
                 : xp // ignore: cast_nullable_to_non_nullable
                       as int,
+            goalId: freezed == goalId
+                ? _value.goalId
+                : goalId // ignore: cast_nullable_to_non_nullable
+                      as String?,
             completedAt: freezed == completedAt
                 ? _value.completedAt
                 : completedAt // ignore: cast_nullable_to_non_nullable
@@ -150,6 +157,7 @@ abstract class _$$TaskImplCopyWith<$Res> implements $TaskCopyWith<$Res> {
     DateTime? startAt,
     DateTime? endAt,
     int xp,
+    String? goalId,
     DateTime? completedAt,
     DateTime createdAt,
     DateTime updatedAt,
@@ -174,6 +182,7 @@ class __$$TaskImplCopyWithImpl<$Res>
     Object? startAt = freezed,
     Object? endAt = freezed,
     Object? xp = null,
+    Object? goalId = freezed,
     Object? completedAt = freezed,
     Object? createdAt = null,
     Object? updatedAt = null,
@@ -204,6 +213,10 @@ class __$$TaskImplCopyWithImpl<$Res>
             ? _value.xp
             : xp // ignore: cast_nullable_to_non_nullable
                   as int,
+        goalId: freezed == goalId
+            ? _value.goalId
+            : goalId // ignore: cast_nullable_to_non_nullable
+                  as String?,
         completedAt: freezed == completedAt
             ? _value.completedAt
             : completedAt // ignore: cast_nullable_to_non_nullable
@@ -231,6 +244,7 @@ class _$TaskImpl implements _Task {
     this.startAt,
     this.endAt,
     this.xp = 10,
+    this.goalId,
     this.completedAt,
     required this.createdAt,
     required this.updatedAt,
@@ -258,6 +272,8 @@ class _$TaskImpl implements _Task {
   @override
   @JsonKey()
   final int xp;
+  @override
+  final String? goalId;
 
   /// null = not completed
   @override
@@ -269,7 +285,7 @@ class _$TaskImpl implements _Task {
 
   @override
   String toString() {
-    return 'Task(id: $id, title: $title, day: $day, startAt: $startAt, endAt: $endAt, xp: $xp, completedAt: $completedAt, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Task(id: $id, title: $title, day: $day, startAt: $startAt, endAt: $endAt, xp: $xp, goalId: $goalId, completedAt: $completedAt, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -283,6 +299,7 @@ class _$TaskImpl implements _Task {
             (identical(other.startAt, startAt) || other.startAt == startAt) &&
             (identical(other.endAt, endAt) || other.endAt == endAt) &&
             (identical(other.xp, xp) || other.xp == xp) &&
+            (identical(other.goalId, goalId) || other.goalId == goalId) &&
             (identical(other.completedAt, completedAt) ||
                 other.completedAt == completedAt) &&
             (identical(other.createdAt, createdAt) ||
@@ -301,6 +318,7 @@ class _$TaskImpl implements _Task {
     startAt,
     endAt,
     xp,
+    goalId,
     completedAt,
     createdAt,
     updatedAt,
@@ -328,6 +346,7 @@ abstract class _Task implements Task {
     final DateTime? startAt,
     final DateTime? endAt,
     final int xp,
+    final String? goalId,
     final DateTime? completedAt,
     required final DateTime createdAt,
     required final DateTime updatedAt,
@@ -353,6 +372,8 @@ abstract class _Task implements Task {
   /// XP granted when completed
   @override
   int get xp;
+  @override
+  String? get goalId;
 
   /// null = not completed
   @override

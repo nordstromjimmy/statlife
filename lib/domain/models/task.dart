@@ -18,6 +18,7 @@ class Task with _$Task {
 
     /// XP granted when completed
     @Default(10) int xp,
+    String? goalId,
 
     /// null = not completed
     DateTime? completedAt,
