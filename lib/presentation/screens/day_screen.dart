@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import '../../application/auth/auth_controller.dart';
 import '../../application/profile/profile_controller.dart';
 import '../../application/tasks/task_controller.dart';
 import '../../core/utils/time_utils.dart';
+import '../../domain/models/auth_state.dart';
 import '../../domain/models/task.dart';
 import '../sheets/add_task_sheet.dart';
 import '../sheets/edit_task_sheet.dart';
@@ -30,7 +32,7 @@ class DayScreen extends ConsumerStatefulWidget {
 
 class _DayScreenState extends ConsumerState<DayScreen> {
   late DateTime selectedDay;
-  static const _hourHeight = 64.0; // pixels per hour (tweak later)
+  static const _hourHeight = 64.0;
 
   @override
   void initState() {
@@ -39,30 +41,30 @@ class _DayScreenState extends ConsumerState<DayScreen> {
     selectedDay = DateTime(base.year, base.month, base.day);
   }
 
-  void _goToDay(DateTime day) {
-    final d = DateTime(day.year, day.month, day.day);
-    final key = DateFormat('yyyyMMdd').format(d);
-    // updates URL + keeps shell nav correct
-    context.go('/day/$key');
-    setState(() => selectedDay = d);
-  }
-
   @override
   void didUpdateWidget(covariant DayScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    final incoming = widget.initialDay;
-    if (incoming == null) return;
-
-    final normalized = DateTime(incoming.year, incoming.month, incoming.day);
-    if (!isSameDay(normalized, selectedDay)) {
-      setState(() => selectedDay = normalized);
+    if (widget.initialDay != oldWidget.initialDay) {
+      final base = widget.initialDay ?? DateTime.now();
+      setState(() {
+        selectedDay = DateTime(base.year, base.month, base.day);
+      });
     }
+  }
+
+  void _goToDay(DateTime day) {
+    final d = DateTime(day.year, day.month, day.day);
+    final key = DateFormat('yyyyMMdd').format(d);
+
+    context.go('/day/$key');
   }
 
   @override
   Widget build(BuildContext context) {
     final tasksAsync = ref.watch(taskControllerProvider);
+    final profileAsync = ref.watch(profileControllerProvider);
+    final authAsync = ref.watch(authControllerProvider);
 
     final nowAsync = ref.watch(nowProvider);
     final now = nowAsync.value ?? DateTime.now();
@@ -70,16 +72,52 @@ class _DayScreenState extends ConsumerState<DayScreen> {
     // Date in appbar formatted as "Friday, 16 Jan"
     final dateLabel = DateFormat('EEEE, d MMM').format(day);
 
+    final profile = profileAsync.value;
+    final auth = authAsync.value;
+    final welcomeName = auth?.isGuest ?? true
+        ? 'Guest'
+        : (profile?.name ?? 'User');
+
     const gridLineOffset = 10.0;
 
     return Scaffold(
       appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        title: Row(
           children: [
-            Text(dateLabel),
-            SizedBox(width: 6),
-            Text(now.year.toString(), style: TextStyle(fontSize: 16)),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Welcome back, ',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    maxLines: 1,
+                  ),
+                  Text(
+                    welcomeName,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12), // Add spacing between name and date
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(dateLabel),
+                const SizedBox(height: 2), // Changed from width to height
+                Text(now.year.toString(), style: const TextStyle(fontSize: 16)),
+              ],
+            ),
           ],
         ),
       ),
@@ -100,7 +138,7 @@ class _DayScreenState extends ConsumerState<DayScreen> {
               child: tasksAsync.when(
                 data: (tasks) {
                   final dayTasks = tasks
-                      .where((t) => isSameDay(now, day))
+                      .where((t) => isSameDay(t.day, day))
                       .toList();
 
                   return GestureDetector(

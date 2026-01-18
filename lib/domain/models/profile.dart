@@ -8,6 +8,9 @@ class Profile with _$Profile {
   const factory Profile({
     required String id,
 
+    // User's name (optional)
+    String? name,
+
     // Total XP earned across all time
     @Default(0) int totalXp,
 

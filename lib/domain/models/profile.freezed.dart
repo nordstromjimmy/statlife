@@ -21,7 +21,8 @@ Profile _$ProfileFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$Profile {
-  String get id =>
+  String get id => throw _privateConstructorUsedError; // User's name (optional)
+  String? get name =>
       throw _privateConstructorUsedError; // Total XP earned across all time
   int get totalXp =>
       throw _privateConstructorUsedError; // Cached level (we will also recompute safely)
@@ -45,6 +46,7 @@ abstract class $ProfileCopyWith<$Res> {
   @useResult
   $Res call({
     String id,
+    String? name,
     int totalXp,
     int level,
     DateTime createdAt,
@@ -68,6 +70,7 @@ class _$ProfileCopyWithImpl<$Res, $Val extends Profile>
   @override
   $Res call({
     Object? id = null,
+    Object? name = freezed,
     Object? totalXp = null,
     Object? level = null,
     Object? createdAt = null,
@@ -79,6 +82,10 @@ class _$ProfileCopyWithImpl<$Res, $Val extends Profile>
                 ? _value.id
                 : id // ignore: cast_nullable_to_non_nullable
                       as String,
+            name: freezed == name
+                ? _value.name
+                : name // ignore: cast_nullable_to_non_nullable
+                      as String?,
             totalXp: null == totalXp
                 ? _value.totalXp
                 : totalXp // ignore: cast_nullable_to_non_nullable
@@ -111,6 +118,7 @@ abstract class _$$ProfileImplCopyWith<$Res> implements $ProfileCopyWith<$Res> {
   @useResult
   $Res call({
     String id,
+    String? name,
     int totalXp,
     int level,
     DateTime createdAt,
@@ -133,6 +141,7 @@ class __$$ProfileImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? id = null,
+    Object? name = freezed,
     Object? totalXp = null,
     Object? level = null,
     Object? createdAt = null,
@@ -144,6 +153,10 @@ class __$$ProfileImplCopyWithImpl<$Res>
             ? _value.id
             : id // ignore: cast_nullable_to_non_nullable
                   as String,
+        name: freezed == name
+            ? _value.name
+            : name // ignore: cast_nullable_to_non_nullable
+                  as String?,
         totalXp: null == totalXp
             ? _value.totalXp
             : totalXp // ignore: cast_nullable_to_non_nullable
@@ -170,6 +183,7 @@ class __$$ProfileImplCopyWithImpl<$Res>
 class _$ProfileImpl implements _Profile {
   const _$ProfileImpl({
     required this.id,
+    this.name,
     this.totalXp = 0,
     this.level = 1,
     required this.createdAt,
@@ -181,6 +195,9 @@ class _$ProfileImpl implements _Profile {
 
   @override
   final String id;
+  // User's name (optional)
+  @override
+  final String? name;
   // Total XP earned across all time
   @override
   @JsonKey()
@@ -196,7 +213,7 @@ class _$ProfileImpl implements _Profile {
 
   @override
   String toString() {
-    return 'Profile(id: $id, totalXp: $totalXp, level: $level, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Profile(id: $id, name: $name, totalXp: $totalXp, level: $level, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -205,6 +222,7 @@ class _$ProfileImpl implements _Profile {
         (other.runtimeType == runtimeType &&
             other is _$ProfileImpl &&
             (identical(other.id, id) || other.id == id) &&
+            (identical(other.name, name) || other.name == name) &&
             (identical(other.totalXp, totalXp) || other.totalXp == totalXp) &&
             (identical(other.level, level) || other.level == level) &&
             (identical(other.createdAt, createdAt) ||
@@ -216,7 +234,7 @@ class _$ProfileImpl implements _Profile {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode =>
-      Object.hash(runtimeType, id, totalXp, level, createdAt, updatedAt);
+      Object.hash(runtimeType, id, name, totalXp, level, createdAt, updatedAt);
 
   /// Create a copy of Profile
   /// with the given fields replaced by the non-null parameter values.
@@ -235,6 +253,7 @@ class _$ProfileImpl implements _Profile {
 abstract class _Profile implements Profile {
   const factory _Profile({
     required final String id,
+    final String? name,
     final int totalXp,
     final int level,
     required final DateTime createdAt,
@@ -244,7 +263,9 @@ abstract class _Profile implements Profile {
   factory _Profile.fromJson(Map<String, dynamic> json) = _$ProfileImpl.fromJson;
 
   @override
-  String get id; // Total XP earned across all time
+  String get id; // User's name (optional)
+  @override
+  String? get name; // Total XP earned across all time
   @override
   int get totalXp; // Cached level (we will also recompute safely)
   @override

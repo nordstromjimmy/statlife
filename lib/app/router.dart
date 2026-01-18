@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -75,12 +76,17 @@ final routerProvider = Provider<GoRouter>((ref) {
               DateTime? parsed;
               if (key != null) {
                 try {
-                  parsed = DateFormat('yyyyMMdd').parse(key);
+                  // Parse the date: format is yyyyMMdd like "20260118"
+                  final year = int.parse(key.substring(0, 4));
+                  final month = int.parse(key.substring(4, 6));
+                  final day = int.parse(key.substring(6, 8));
+                  parsed = DateTime(year, month, day);
                 } catch (_) {
                   // invalid key, fallback
                 }
               }
-              return DayScreen(initialDay: parsed);
+
+              return DayScreen(key: ValueKey('day_$key'), initialDay: parsed);
             },
           ),
           GoRoute(

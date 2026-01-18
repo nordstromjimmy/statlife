@@ -53,6 +53,7 @@ class WeekView extends StatelessWidget {
             separatorBuilder: (_, __) => const SizedBox(height: 10),
             itemBuilder: (context, i) {
               final day = days[i];
+
               final dayTasks = tasks
                   .where((t) => isSameDay(t.day, day))
                   .toList();
@@ -63,6 +64,7 @@ class WeekView extends StatelessWidget {
               return InkWell(
                 borderRadius: BorderRadius.circular(14),
                 onTap: () => onPickDay(day),
+
                 child: Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(

@@ -27,6 +27,7 @@ class ProfileController extends AsyncNotifier<Profile> {
     final now = DateTime.now();
     final fresh = Profile(
       id: const Uuid().v4(),
+      name: null,
       totalXp: 0,
       level: 1,
       createdAt: now,
@@ -44,6 +45,17 @@ class ProfileController extends AsyncNotifier<Profile> {
     final updated = current.copyWith(
       totalXp: nextTotal,
       level: computed.level,
+      updatedAt: DateTime.now(),
+    );
+
+    state = AsyncData(updated);
+    await _repo.save(updated);
+  }
+
+  Future<void> updateName(String? name) async {
+    final current = state.value!;
+    final updated = current.copyWith(
+      name: name?.trim().isEmpty ?? true ? null : name?.trim(),
       updatedAt: DateTime.now(),
     );
 
