@@ -1,10 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
-
 import '../../data/repositories/profile_repository.dart';
 import '../../domain/logic/leveling.dart';
+import '../../domain/models/auth_state.dart';
 import '../../domain/models/profile.dart';
-import '../providers.dart';
+import '../auth/auth_controller.dart';
 
 final profileControllerProvider =
     AsyncNotifierProvider<ProfileController, Profile>(ProfileController.new);
@@ -14,8 +15,25 @@ class ProfileController extends AsyncNotifier<Profile> {
 
   @override
   Future<Profile> build() async {
+    // WAIT for auth state to load first
+    final authState = await ref.watch(authControllerProvider.future);
+    final supabaseUserId = Supabase.instance.client.auth.currentUser?.id;
+
+    // Try to get from repository (checks Supabase first if authenticated)
     final existing = await _repo.get();
+
     if (existing != null) {
+      // If we have a local profile but now we're authenticated with different ID, fetch from Supabase
+      if (authState.isAuthenticated &&
+          supabaseUserId != null &&
+          existing.id != supabaseUserId) {
+        final supabaseProfile = await _repo
+            .get(); // This will fetch from Supabase
+        if (supabaseProfile != null && supabaseProfile.id == supabaseUserId) {
+          return supabaseProfile;
+        }
+      }
+
       final computed = computeLevelFromTotalXp(existing.totalXp);
       final safe = existing.copyWith(level: computed.level);
       if (safe.level != existing.level) {
@@ -24,16 +42,24 @@ class ProfileController extends AsyncNotifier<Profile> {
       return safe;
     }
 
+    // No existing profile found
     final now = DateTime.now();
+
+    // IMPORTANT: Use Supabase user ID if authenticated
+    final profileId = supabaseUserId ?? const Uuid().v4();
+
     final fresh = Profile(
-      id: const Uuid().v4(),
+      id: profileId,
       name: null,
       totalXp: 0,
       level: 1,
       createdAt: now,
       updatedAt: now,
     );
-    await _repo.save(fresh);
+
+    // Save to local storage (Supabase already has it via trigger for authenticated users)
+    await _repo.localRepo.save(fresh);
+
     return fresh;
   }
 
@@ -61,5 +87,16 @@ class ProfileController extends AsyncNotifier<Profile> {
 
     state = AsyncData(updated);
     await _repo.save(updated);
+
+    // Also update in Supabase if authenticated
+    final authState = ref.read(authControllerProvider).value;
+
+    if (authState?.isAuthenticated ?? false) {
+      try {
+        await _repo.updateName(current.id, updated.name);
+      } catch (_) {
+        //
+      }
+    }
   }
 }

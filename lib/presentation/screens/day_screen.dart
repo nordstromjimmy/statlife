@@ -72,9 +72,9 @@ class _DayScreenState extends ConsumerState<DayScreen> {
     // Date in appbar formatted as "Friday, 16 Jan"
     final dateLabel = DateFormat('EEEE, d MMM').format(day);
 
-    final profile = profileAsync.value;
-    final auth = authAsync.value;
-    final welcomeName = auth?.isGuest ?? true
+    final profile = profileAsync.valueOrNull;
+    final auth = authAsync.valueOrNull;
+    final welcomeName = (auth?.isGuest ?? true)
         ? 'Guest'
         : (profile?.name ?? 'User');
 

@@ -15,23 +15,16 @@ final _privateConstructorUsedError = UnsupportedError(
   'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
 );
 
-Profile _$ProfileFromJson(Map<String, dynamic> json) {
-  return _Profile.fromJson(json);
-}
-
 /// @nodoc
 mixin _$Profile {
   String get id => throw _privateConstructorUsedError; // User's name (optional)
   String? get name =>
       throw _privateConstructorUsedError; // Total XP earned across all time
-  int get totalXp =>
-      throw _privateConstructorUsedError; // Cached level (we will also recompute safely)
+  @JsonKey(name: 'total_xp')
+  int get totalXp => throw _privateConstructorUsedError; // Cached level (we will also recompute safely)
   int get level => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
   DateTime get updatedAt => throw _privateConstructorUsedError;
-
-  /// Serializes this Profile to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
   /// Create a copy of Profile
   /// with the given fields replaced by the non-null parameter values.
@@ -47,7 +40,7 @@ abstract class $ProfileCopyWith<$Res> {
   $Res call({
     String id,
     String? name,
-    int totalXp,
+    @JsonKey(name: 'total_xp') int totalXp,
     int level,
     DateTime createdAt,
     DateTime updatedAt,
@@ -119,7 +112,7 @@ abstract class _$$ProfileImplCopyWith<$Res> implements $ProfileCopyWith<$Res> {
   $Res call({
     String id,
     String? name,
-    int totalXp,
+    @JsonKey(name: 'total_xp') int totalXp,
     int level,
     DateTime createdAt,
     DateTime updatedAt,
@@ -179,19 +172,16 @@ class __$$ProfileImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
 class _$ProfileImpl implements _Profile {
   const _$ProfileImpl({
     required this.id,
     this.name,
-    this.totalXp = 0,
+    @JsonKey(name: 'total_xp') this.totalXp = 0,
     this.level = 1,
     required this.createdAt,
     required this.updatedAt,
   });
-
-  factory _$ProfileImpl.fromJson(Map<String, dynamic> json) =>
-      _$$ProfileImplFromJson(json);
 
   @override
   final String id;
@@ -200,7 +190,7 @@ class _$ProfileImpl implements _Profile {
   final String? name;
   // Total XP earned across all time
   @override
-  @JsonKey()
+  @JsonKey(name: 'total_xp')
   final int totalXp;
   // Cached level (we will also recompute safely)
   @override
@@ -231,7 +221,6 @@ class _$ProfileImpl implements _Profile {
                 other.updatedAt == updatedAt));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode =>
       Object.hash(runtimeType, id, name, totalXp, level, createdAt, updatedAt);
@@ -243,30 +232,24 @@ class _$ProfileImpl implements _Profile {
   @pragma('vm:prefer-inline')
   _$$ProfileImplCopyWith<_$ProfileImpl> get copyWith =>
       __$$ProfileImplCopyWithImpl<_$ProfileImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$ProfileImplToJson(this);
-  }
 }
 
 abstract class _Profile implements Profile {
   const factory _Profile({
     required final String id,
     final String? name,
-    final int totalXp,
+    @JsonKey(name: 'total_xp') final int totalXp,
     final int level,
     required final DateTime createdAt,
     required final DateTime updatedAt,
   }) = _$ProfileImpl;
-
-  factory _Profile.fromJson(Map<String, dynamic> json) = _$ProfileImpl.fromJson;
 
   @override
   String get id; // User's name (optional)
   @override
   String? get name; // Total XP earned across all time
   @override
+  @JsonKey(name: 'total_xp')
   int get totalXp; // Cached level (we will also recompute safely)
   @override
   int get level;
