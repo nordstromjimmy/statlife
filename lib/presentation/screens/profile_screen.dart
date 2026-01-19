@@ -84,13 +84,20 @@ class ProfileScreen extends ConsumerWidget {
                               'Are you sure you want to sign out? Your data will remain synced in the cloud.',
                             ),
                             actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, false),
-                                child: const Text('Cancel'),
-                              ),
-                              FilledButton(
-                                onPressed: () => Navigator.pop(context, true),
-                                child: const Text('Sign Out'),
+                              Row(
+                                children: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.pop(context, false),
+                                    child: const Text('Cancel'),
+                                  ),
+                                  Spacer(),
+                                  FilledButton(
+                                    onPressed: () =>
+                                        Navigator.pop(context, true),
+                                    child: const Text('Sign Out'),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -108,7 +115,9 @@ class ProfileScreen extends ConsumerWidget {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        side: BorderSide(color: Colors.red.withOpacity(0.5)),
+                        side: BorderSide(
+                          color: Colors.red.withValues(alpha: 0.5),
+                        ),
                         foregroundColor: Colors.red,
                       ),
                     ),
@@ -129,15 +138,15 @@ class ProfileScreen extends ConsumerWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Theme.of(context).colorScheme.primary.withOpacity(0.2),
-            Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+            Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+            Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
           width: 1.5,
         ),
       ),
@@ -214,7 +223,7 @@ class ProfileScreen extends ConsumerWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.06)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
       ),
       child: Row(
         children: [
@@ -269,15 +278,15 @@ class ProfileScreen extends ConsumerWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Theme.of(context).colorScheme.primary.withOpacity(0.2),
-            Theme.of(context).colorScheme.primary.withOpacity(0.05),
+            Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+            Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
           width: 1.5,
         ),
       ),
@@ -291,15 +300,17 @@ class ProfileScreen extends ConsumerWidget {
               shape: BoxShape.circle,
               gradient: LinearGradient(
                 colors: [
+                  Theme.of(context).colorScheme.tertiary,
                   Theme.of(context).colorScheme.primary,
-                  Theme.of(context).colorScheme.secondary,
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Theme.of(context).colorScheme.primary.withOpacity(0.4),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.primary.withValues(alpha: 0.4),
                   blurRadius: 20,
                   spreadRadius: 2,
                 ),
@@ -358,7 +369,7 @@ class ProfileScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                '${(progress * 100).toStringAsFixed(1)}% to Level ${profile.level + 1}',
+                '${(progress * 100).toStringAsFixed(0)}% to Level ${profile.level + 1}',
                 style: Theme.of(
                   context,
                 ).textTheme.bodySmall?.copyWith(color: Colors.white54),
@@ -450,7 +461,7 @@ class ProfileScreen extends ConsumerWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.06)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -517,7 +528,7 @@ class ProfileScreen extends ConsumerWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.06)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
       ),
       child: Row(
         children: [
@@ -588,16 +599,21 @@ class _EditNameDialogState extends State<_EditNameDialog> {
         autofocus: true,
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
-        ),
-        FilledButton(
-          onPressed: () {
-            widget.onSave(_controller.text);
-            Navigator.pop(context);
-          },
-          child: const Text('Save'),
+        Row(
+          children: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            Spacer(),
+            FilledButton(
+              onPressed: () {
+                widget.onSave(_controller.text);
+                Navigator.pop(context);
+              },
+              child: const Text('Save'),
+            ),
+          ],
         ),
       ],
     );

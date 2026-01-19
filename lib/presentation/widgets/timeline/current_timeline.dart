@@ -19,8 +19,8 @@ class CurrentTimeLine extends StatelessWidget {
 
     // Clamp so it doesn't render outside the timeline
     y = y.clamp(0.0, 24 * hourHeight);
-    final dotColor = Theme.of(context).colorScheme.primary;
-    final lineColor = Colors.red;
+    final dotColor = Color.fromARGB(255, 255, 255, 255);
+    final lineColor = Color(0xFFff6532);
 
     return Positioned(
       left: 0,

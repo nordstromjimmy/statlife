@@ -66,8 +66,8 @@ class _TaskBlockState extends State<TaskBlock> {
     final rightPadding = 1.0;
 
     final bg = widget.task.isCompleted
-        ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.16)
-        : Theme.of(context).colorScheme.primary.withValues(alpha: 0.10);
+        ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.4)
+        : Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.7);
 
     return Positioned(
       top: top + 2,

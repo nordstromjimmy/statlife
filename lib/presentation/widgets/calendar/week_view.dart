@@ -69,7 +69,7 @@ class WeekView extends StatelessWidget {
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: today
-                        ? theme.colorScheme.primary.withValues(alpha: 0.44)
+                        ? theme.colorScheme.secondary.withValues(alpha: 0.5)
                         : theme.colorScheme.surface,
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
