@@ -7,7 +7,7 @@ import '../../application/tasks/task_controller.dart';
 import '../../domain/logic/leveling.dart';
 import '../../domain/models/auth_state.dart';
 import '../../domain/models/task.dart';
-import '../widgets/xp_bar.dart';
+import '../widgets/xp/xp_bar.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -354,7 +354,7 @@ class ProfileScreen extends ConsumerWidget {
                     ).textTheme.titleMedium?.copyWith(color: Colors.white70),
                   ),
                   Text(
-                    '${levelInfo.xpIntoLevel} / ${levelInfo.xpForNext}',
+                    '${profile.totalXp} / ${profile.totalXp - levelInfo.xpIntoLevel + levelInfo.xpForNext}', // ✅ Shows 825/1319
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -362,10 +362,13 @@ class ProfileScreen extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: 12),
-              XpBar(
-                currentXp: levelInfo.xpIntoLevel,
-                requiredXp: levelInfo.xpForNext,
-                height: 12,
+              SizedBox(
+                width: double.infinity, // Force full width
+                child: XpBar(
+                  currentXp: levelInfo.xpIntoLevel,
+                  requiredXp: levelInfo.xpForNext,
+                  height: 12,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
