@@ -37,6 +37,7 @@ mixin _$Task {
 
   /// null = not completed
   DateTime? get completedAt => throw _privateConstructorUsedError;
+  DateTime? get firstCompletedAt => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
   DateTime get updatedAt => throw _privateConstructorUsedError;
 
@@ -63,6 +64,7 @@ abstract class $TaskCopyWith<$Res> {
     int xp,
     String? goalId,
     DateTime? completedAt,
+    DateTime? firstCompletedAt,
     DateTime createdAt,
     DateTime updatedAt,
   });
@@ -91,6 +93,7 @@ class _$TaskCopyWithImpl<$Res, $Val extends Task>
     Object? xp = null,
     Object? goalId = freezed,
     Object? completedAt = freezed,
+    Object? firstCompletedAt = freezed,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -128,6 +131,10 @@ class _$TaskCopyWithImpl<$Res, $Val extends Task>
                 ? _value.completedAt
                 : completedAt // ignore: cast_nullable_to_non_nullable
                       as DateTime?,
+            firstCompletedAt: freezed == firstCompletedAt
+                ? _value.firstCompletedAt
+                : firstCompletedAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
             createdAt: null == createdAt
                 ? _value.createdAt
                 : createdAt // ignore: cast_nullable_to_non_nullable
@@ -159,6 +166,7 @@ abstract class _$$TaskImplCopyWith<$Res> implements $TaskCopyWith<$Res> {
     int xp,
     String? goalId,
     DateTime? completedAt,
+    DateTime? firstCompletedAt,
     DateTime createdAt,
     DateTime updatedAt,
   });
@@ -184,6 +192,7 @@ class __$$TaskImplCopyWithImpl<$Res>
     Object? xp = null,
     Object? goalId = freezed,
     Object? completedAt = freezed,
+    Object? firstCompletedAt = freezed,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -221,6 +230,10 @@ class __$$TaskImplCopyWithImpl<$Res>
             ? _value.completedAt
             : completedAt // ignore: cast_nullable_to_non_nullable
                   as DateTime?,
+        firstCompletedAt: freezed == firstCompletedAt
+            ? _value.firstCompletedAt
+            : firstCompletedAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
         createdAt: null == createdAt
             ? _value.createdAt
             : createdAt // ignore: cast_nullable_to_non_nullable
@@ -246,6 +259,7 @@ class _$TaskImpl implements _Task {
     this.xp = 10,
     this.goalId,
     this.completedAt,
+    this.firstCompletedAt,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -279,13 +293,15 @@ class _$TaskImpl implements _Task {
   @override
   final DateTime? completedAt;
   @override
+  final DateTime? firstCompletedAt;
+  @override
   final DateTime createdAt;
   @override
   final DateTime updatedAt;
 
   @override
   String toString() {
-    return 'Task(id: $id, title: $title, day: $day, startAt: $startAt, endAt: $endAt, xp: $xp, goalId: $goalId, completedAt: $completedAt, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Task(id: $id, title: $title, day: $day, startAt: $startAt, endAt: $endAt, xp: $xp, goalId: $goalId, completedAt: $completedAt, firstCompletedAt: $firstCompletedAt, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -302,6 +318,8 @@ class _$TaskImpl implements _Task {
             (identical(other.goalId, goalId) || other.goalId == goalId) &&
             (identical(other.completedAt, completedAt) ||
                 other.completedAt == completedAt) &&
+            (identical(other.firstCompletedAt, firstCompletedAt) ||
+                other.firstCompletedAt == firstCompletedAt) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -320,6 +338,7 @@ class _$TaskImpl implements _Task {
     xp,
     goalId,
     completedAt,
+    firstCompletedAt,
     createdAt,
     updatedAt,
   );
@@ -348,6 +367,7 @@ abstract class _Task implements Task {
     final int xp,
     final String? goalId,
     final DateTime? completedAt,
+    final DateTime? firstCompletedAt,
     required final DateTime createdAt,
     required final DateTime updatedAt,
   }) = _$TaskImpl;
@@ -378,6 +398,8 @@ abstract class _Task implements Task {
   /// null = not completed
   @override
   DateTime? get completedAt;
+  @override
+  DateTime? get firstCompletedAt;
   @override
   DateTime get createdAt;
   @override

@@ -6,7 +6,6 @@ import '../../application/profile/profile_controller.dart';
 import '../../application/tasks/task_controller.dart';
 import '../../core/utils/time_utils.dart';
 import '../../domain/models/auth_state.dart';
-import '../../domain/models/task.dart';
 import '../sheets/add_task_sheet.dart';
 import '../sheets/edit_task_sheet.dart';
 import '../widgets/timeline/day_timeline.dart';
@@ -130,7 +129,7 @@ class _DayScreenState extends ConsumerState<DayScreen> {
         padding: const EdgeInsets.only(bottom: 10.0),
         child: FloatingActionButton(
           onPressed: () => showAddTaskSheet(context, ref, day),
-          child: const Icon(Icons.add),
+          child: const Icon(Icons.add, color: Colors.black),
         ),
       ),
 
@@ -178,14 +177,20 @@ class _DayScreenState extends ConsumerState<DayScreen> {
                     onToggleComplete: (task, checked) async {
                       final updated = task.copyWith(
                         completedAt: checked ? DateTime.now() : null,
+                        // Set firstCompletedAt only if it's the FIRST time completing
+                        firstCompletedAt:
+                            checked && task.firstCompletedAt == null
+                            ? DateTime.now()
+                            : task.firstCompletedAt, // Keep existing value
                         updatedAt: DateTime.now(),
                       );
+
                       await ref
                           .read(taskControllerProvider.notifier)
                           .upsert(updated);
 
-                      // Award XP and show animation
-                      if (checked && !task.isCompleted) {
+                      // Award XP only on FIRST completion ever (when firstCompletedAt was null)
+                      if (checked && task.firstCompletedAt == null) {
                         // Show floating +XP animation
                         final renderBox =
                             context.findRenderObject() as RenderBox?;

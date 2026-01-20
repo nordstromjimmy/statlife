@@ -22,6 +22,7 @@ class Task with _$Task {
 
     /// null = not completed
     DateTime? completedAt,
+    DateTime? firstCompletedAt,
 
     required DateTime createdAt,
     required DateTime updatedAt,

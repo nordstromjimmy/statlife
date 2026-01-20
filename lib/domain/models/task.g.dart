@@ -19,6 +19,9 @@ _$TaskImpl _$$TaskImplFromJson(Map<String, dynamic> json) => _$TaskImpl(
   completedAt: json['completedAt'] == null
       ? null
       : DateTime.parse(json['completedAt'] as String),
+  firstCompletedAt: json['firstCompletedAt'] == null
+      ? null
+      : DateTime.parse(json['firstCompletedAt'] as String),
   createdAt: DateTime.parse(json['createdAt'] as String),
   updatedAt: DateTime.parse(json['updatedAt'] as String),
 );
@@ -33,6 +36,7 @@ Map<String, dynamic> _$$TaskImplToJson(_$TaskImpl instance) =>
       'xp': instance.xp,
       'goalId': instance.goalId,
       'completedAt': instance.completedAt?.toIso8601String(),
+      'firstCompletedAt': instance.firstCompletedAt?.toIso8601String(),
       'createdAt': instance.createdAt.toIso8601String(),
       'updatedAt': instance.updatedAt.toIso8601String(),
     };

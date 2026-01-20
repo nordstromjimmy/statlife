@@ -66,8 +66,8 @@ class _TaskBlockState extends State<TaskBlock> {
     final rightPadding = 1.0;
 
     final bg = widget.task.isCompleted
-        ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.4)
-        : Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.7);
+        ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.6)
+        : Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.4);
 
     return Positioned(
       top: top + 2,
@@ -94,6 +94,9 @@ class _TaskBlockState extends State<TaskBlock> {
                 task: widget.task.copyWith(endAt: end),
                 start: start,
                 end: end,
+                onToggleComplete: (checked) {
+                  widget.onToggleComplete(widget.task, checked);
+                },
               ),
 
               // RESIZE HANDLE (bottom)

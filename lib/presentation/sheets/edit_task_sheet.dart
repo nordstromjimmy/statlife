@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../application/profile/profile_controller.dart';
 import '../../application/tasks/task_controller.dart';
 import '../../core/constants/times.dart';
 import '../../core/utils/time_utils.dart';
@@ -106,72 +105,6 @@ Future<void> showEditTaskSheet(
                 ),
 
                 const SizedBox(height: 12),
-
-                // XP stepper
-                Row(
-                  children: [
-                    Text('XP', style: Theme.of(context).textTheme.titleMedium),
-                    const Spacer(),
-                    IconButton(
-                      onPressed: xp > 0
-                          ? () => setState(() => xp = (xp - 5).clamp(0, 9999))
-                          : null,
-                      icon: const Icon(Icons.remove),
-                    ),
-                    Text('$xp', style: Theme.of(context).textTheme.titleMedium),
-                    IconButton(
-                      onPressed: () =>
-                          setState(() => xp = (xp + 5).clamp(0, 9999)),
-                      icon: const Icon(Icons.add),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 8),
-
-                // Complete toggle (and XP behavior)
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () async {
-                          final checked = !task.isCompleted;
-                          final updated = task.copyWith(
-                            title: titleController.text.trim().isEmpty
-                                ? task.title
-                                : titleController.text.trim(),
-                            startAt: start,
-                            endAt: end,
-                            xp: xp,
-                            completedAt: checked ? DateTime.now() : null,
-                            updatedAt: DateTime.now(),
-                          );
-
-                          await ref
-                              .read(taskControllerProvider.notifier)
-                              .upsert(updated);
-
-                          // Award XP only when newly completed
-                          if (checked && !task.isCompleted) {
-                            await ref
-                                .read(profileControllerProvider.notifier)
-                                .addXp(updated.xp);
-                          }
-
-                          if (context.mounted) Navigator.pop(context);
-                        },
-                        icon: Icon(task.isCompleted ? Icons.undo : Icons.check),
-                        label: Text(
-                          task.isCompleted
-                              ? 'Mark incomplete'
-                              : 'Mark complete',
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 10),
 
                 Row(
                   children: [
