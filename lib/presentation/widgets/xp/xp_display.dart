@@ -38,19 +38,10 @@ class _XpDisplayState extends State<XpDisplay> {
     final newTotalXp = widget.profile.totalXp;
     final newLevelInfo = computeLevelFromTotalXp(newTotalXp);
 
-    print(
-      '🎮 XpDisplay didUpdate: ${oldWidget.profile.totalXp} -> $newTotalXp',
-    );
-
     // Check for level up
     if (newLevelInfo.level > _previousLevel) {
-      print('🎮 Level up detected! ${_previousLevel} -> ${newLevelInfo.level}');
-
       // Calculate the new progress for the XpBar
       final newProgress = newLevelInfo.xpIntoLevel / newLevelInfo.xpForNext;
-      print(
-        '🎮 New level progress: ${newLevelInfo.xpIntoLevel}/${newLevelInfo.xpForNext} = $newProgress',
-      );
 
       widget.levelBadgeKey.currentState?.triggerLevelUp();
 

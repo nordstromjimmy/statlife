@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../data/datasources/local/local_goal_repository.dart';
+import '../../data/repositories/goal_repository.dart';
 import '../../domain/models/goal.dart';
 import '../providers.dart';
 import '../tasks/task_controller.dart';
@@ -10,11 +10,10 @@ final goalControllerProvider =
     AsyncNotifierProvider<GoalController, List<Goal>>(GoalController.new);
 
 class GoalController extends AsyncNotifier<List<Goal>> {
-  late final LocalGoalRepository _repo;
+  GoalRepository get _repo => ref.read(goalRepositoryProvider);
 
   @override
   Future<List<Goal>> build() async {
-    _repo = ref.read(localGoalRepositoryProvider);
     return _repo.getAll();
   }
 
@@ -29,8 +28,11 @@ class GoalController extends AsyncNotifier<List<Goal>> {
       next[idx] = goal;
     }
 
+    // ✅ FIX: Save to repository FIRST
+    await _repo.upsert(goal, next);
+
+    // Then update state
     state = AsyncData(next);
-    await _repo.saveAll(next);
   }
 
   Future<void> create({
@@ -52,8 +54,12 @@ class GoalController extends AsyncNotifier<List<Goal>> {
     // 1) Remove goal from goals list
     final currentGoals = state.value ?? [];
     final nextGoals = currentGoals.where((g) => g.id != id).toList();
+
+    // ✅ FIX: Save to repository FIRST
+    await _repo.delete(id, nextGoals);
+
+    // Then update state
     state = AsyncData(nextGoals);
-    await _repo.saveAll(nextGoals);
 
     // 2) Unlink tasks that reference this goal
     final tasks = ref.read(taskControllerProvider).value ?? [];

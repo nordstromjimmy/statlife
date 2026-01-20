@@ -6,6 +6,7 @@ import '../../domain/logic/leveling.dart';
 import '../../domain/models/auth_state.dart';
 import '../../domain/models/profile.dart';
 import '../auth/auth_controller.dart';
+import '../providers.dart';
 
 final profileControllerProvider =
     AsyncNotifierProvider<ProfileController, Profile>(ProfileController.new);

@@ -1,24 +1,6 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../application/auth/auth_controller.dart';
-import '../../application/providers.dart';
-import '../../domain/models/auth_state.dart';
 import '../../domain/models/profile.dart';
 import '../datasources/local/local_profile_repository.dart';
 import '../datasources/remote/supabase_profile_datasource.dart';
-
-final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
-  final localRepo = ref.read(localProfileRepositoryProvider);
-  final supabaseClient = Supabase.instance.client;
-  final supabaseRepo = SupabaseProfileDatasource(supabaseClient);
-  final authState = ref.watch(authControllerProvider).value;
-
-  return ProfileRepository(
-    localRepo: localRepo,
-    supabaseRepo: supabaseRepo,
-    isAuthenticated: authState?.isAuthenticated ?? false,
-  );
-});
 
 class ProfileRepository {
   ProfileRepository({
@@ -70,10 +52,9 @@ class ProfileRepository {
     if (isAuthenticated) {
       try {
         await supabaseRepo.updateName(userId, name);
-      } catch (_) {
-        //
+      } catch (e) {
+        print(e);
       }
     }
-    // Name will be saved to local when profile is saved through normal flow
   }
 }

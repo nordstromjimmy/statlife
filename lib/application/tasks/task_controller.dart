@@ -23,15 +23,21 @@ class TaskController extends AsyncNotifier<List<Task>> {
   }
 
   Future<void> upsert(Task task) async {
+    // ✅ FIX: Save to repository FIRST, then update state
+    await _repo.upsert(task);
+
+    // Only update state after successful save
     final current = state.value ?? [];
     state = AsyncData(_upsertInMemory(current, task));
-    await _repo.upsert(task);
   }
 
   Future<void> delete(String id) async {
+    // ✅ FIX: Delete from repository FIRST, then update state
+    await _repo.delete(id);
+
+    // Only update state after successful delete
     final current = state.value ?? [];
     state = AsyncData(current.where((t) => t.id != id).toList());
-    await _repo.delete(id);
   }
 
   List<Task> _upsertInMemory(List<Task> list, Task task) {
@@ -41,15 +47,17 @@ class TaskController extends AsyncNotifier<List<Task>> {
       updated.add(task);
     } else {
       updated[idx] = task;
-      //updated.sort((a, b) => a.day.compareTo(b.day));
-      updated.sort((a, b) {
-        final d = a.day.compareTo(b.day);
-        if (d != 0) return d;
-        final aStart = a.startAt ?? a.day;
-        final bStart = b.startAt ?? b.day;
-        return aStart.compareTo(bStart);
-      });
     }
+
+    // Sort after updating
+    updated.sort((a, b) {
+      final d = a.day.compareTo(b.day);
+      if (d != 0) return d;
+      final aStart = a.startAt ?? a.day;
+      final bStart = b.startAt ?? b.day;
+      return aStart.compareTo(bStart);
+    });
+
     return updated;
   }
 }
