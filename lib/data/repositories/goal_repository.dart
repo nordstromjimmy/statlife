@@ -7,79 +7,86 @@ class GoalRepository {
     required this.localRepo,
     required this.supabaseRepo,
     required this.isAuthenticated,
+    this.userId,
   });
 
   final LocalGoalRepository localRepo;
   final SupabaseGoalDatasource supabaseRepo;
   final bool isAuthenticated;
+  final String? userId;
 
-  /// Get all goals - from Supabase if authenticated, otherwise local
+  /// Get all goals
+  /// - Guest: Fetch from local storage with guest prefix
+  /// - Authenticated: Fetch from Supabase, cache locally with user prefix
   Future<List<Goal>> getAll() async {
-    if (isAuthenticated) {
+    if (isAuthenticated && userId != null) {
       try {
+        print('📥 [User: $userId] Fetching goals from Supabase...');
         final goals = await supabaseRepo.getAllGoals();
+        print('✅ Fetched ${goals.length} goals from Supabase');
 
-        // Also save to local for offline access
+        // Cache to local storage with user-specific key
         if (goals.isNotEmpty) {
-          await localRepo.saveAll(goals);
+          await localRepo.saveAll(goals, userId: userId);
+          print('💾 Cached ${goals.length} goals to local storage');
         }
         return goals;
       } catch (e) {
-        print('Supabase fetch failed, using local: $e');
-        return await localRepo.getAll();
+        print('❌ Supabase fetch failed, using local cache: $e');
+        return await localRepo.getAll(userId: userId);
       }
     }
 
-    return await localRepo.getAll();
+    // Guest mode: use local storage only
+    print('📱 [Guest] Fetching goals from local storage...');
+    final goals = await localRepo.getAll(); // No userId = guest prefix
+    print('✅ Fetched ${goals.length} guest goals from local');
+    return goals;
   }
 
-  /// Save all goals - to both local and Supabase if authenticated
-  Future<void> saveAll(List<Goal> goals) async {
-    // Always save to local first for offline access
-    await localRepo.saveAll(goals);
-
-    // Also save to Supabase if authenticated
-    if (isAuthenticated) {
-      try {
-        for (final goal in goals) {
-          await supabaseRepo.upsertGoal(goal);
-        }
-      } catch (e) {
-        print('Supabase save failed: $e');
-        // Continue anyway - data is in local storage
-      }
-    }
-  }
-
-  /// Save/update a single goal - to both local and Supabase if authenticated
+  /// Save/update a single goal
   Future<void> upsert(Goal goal, List<Goal> allGoals) async {
-    // Always save to local first
-    await localRepo.saveAll(allGoals);
+    if (isAuthenticated && userId != null) {
+      print('💾 [User: $userId] Saving goal: ${goal.title}');
 
-    // Also save to Supabase if authenticated
-    if (isAuthenticated) {
+      // Save to local with user-specific key
+      await localRepo.saveAll(allGoals, userId: userId);
+      print('✅ Saved to local cache');
+
+      // Sync to Supabase
       try {
         await supabaseRepo.upsertGoal(goal);
+        print('✅ Synced to Supabase');
       } catch (e) {
-        print('Supabase upsert failed: $e');
-        // Continue anyway - data is in local storage
+        print('❌ Supabase sync failed: $e');
       }
+    } else {
+      // Guest mode: save to local only
+      print('💾 [Guest] Saving goal: ${goal.title}');
+      await localRepo.saveAll(allGoals); // No userId = guest prefix
+      print('✅ Saved to guest local storage');
     }
   }
 
-  /// Delete goal - from both local and Supabase if authenticated
+  /// Delete goal
   Future<void> delete(String id, List<Goal> remainingGoals) async {
-    // Always save to local (with goal removed)
-    await localRepo.saveAll(remainingGoals);
+    if (isAuthenticated && userId != null) {
+      print('🗑️ [User: $userId] Deleting goal: $id');
 
-    // Also delete from Supabase if authenticated
-    if (isAuthenticated) {
+      await localRepo.saveAll(remainingGoals, userId: userId);
+      print('✅ Deleted from local cache');
+
       try {
         await supabaseRepo.deleteGoal(id);
+        print('✅ Deleted from Supabase');
       } catch (e) {
-        print('Supabase delete failed: $e');
-        // Continue anyway - deleted from local storage
+        print('❌ Supabase delete failed: $e');
       }
+    } else {
+      // Guest mode
+      print('🗑️ [Guest] Deleting goal: $id');
+      await localRepo.saveAll(remainingGoals);
+      print('✅ Deleted from guest local storage');
     }
   }
 }

@@ -6,12 +6,12 @@ import '../data/datasources/local/local_goal_repository.dart';
 import '../data/datasources/local/local_store.dart';
 import '../data/datasources/local/local_task_repository.dart';
 import '../data/datasources/local/local_profile_repository.dart';
-import '../data/datasources/remote/supabase_goal_datasource.dart';
 import '../data/datasources/remote/supabase_profile_datasource.dart';
 import '../data/datasources/remote/supabase_task_datasource.dart';
-import '../data/repositories/goal_repository.dart';
+import '../data/datasources/remote/supabase_goal_datasource.dart';
 import '../data/repositories/task_repository.dart';
 import '../data/repositories/profile_repository.dart';
+import '../data/repositories/goal_repository.dart';
 import '../domain/models/auth_state.dart';
 
 final sharedPrefsProvider = Provider<SharedPreferences>((ref) {
@@ -23,13 +23,23 @@ final localStoreProvider = Provider<LocalStore>((ref) {
 });
 
 // ============================================================================
-// AUTH STATE HELPER
+// AUTH STATE HELPERS
 // ============================================================================
 
 /// Helper provider to get current authentication status
 final isAuthenticatedProvider = Provider<bool>((ref) {
   final authState = ref.watch(authControllerProvider).value;
   return authState?.isAuthenticated ?? false;
+});
+
+/// Helper provider to get current user ID (null if not authenticated)
+final currentUserIdProvider = Provider<String?>((ref) {
+  final authState = ref.watch(authControllerProvider).value;
+  if (authState?.isAuthenticated == true) {
+    // Get userId from Supabase auth
+    return Supabase.instance.client.auth.currentUser?.id;
+  }
+  return null;
 });
 
 // ============================================================================
@@ -51,11 +61,13 @@ final taskRepositoryProvider = Provider<TaskRepository>((ref) {
   final localRepo = ref.read(localTaskRepositoryProvider);
   final supabaseRepo = ref.read(supabaseTaskDatasourceProvider);
   final isAuthenticated = ref.watch(isAuthenticatedProvider);
+  final userId = ref.watch(currentUserIdProvider);
 
   return TaskRepository(
     localRepo: localRepo,
     supabaseRepo: supabaseRepo,
     isAuthenticated: isAuthenticated,
+    userId: userId,
   );
 });
 
@@ -107,10 +119,12 @@ final goalRepositoryProvider = Provider<GoalRepository>((ref) {
   final localRepo = ref.read(localGoalRepositoryProvider);
   final supabaseRepo = ref.read(supabaseGoalDatasourceProvider);
   final isAuthenticated = ref.watch(isAuthenticatedProvider);
+  final userId = ref.watch(currentUserIdProvider);
 
   return GoalRepository(
     localRepo: localRepo,
     supabaseRepo: supabaseRepo,
     isAuthenticated: isAuthenticated,
+    userId: userId,
   );
 });

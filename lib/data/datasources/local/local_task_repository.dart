@@ -2,14 +2,13 @@ import '../../../domain/models/task.dart';
 import 'local_store.dart';
 
 class LocalTaskRepository {
-  // ✅ Remove "implements TaskRepository"
   LocalTaskRepository(this._store);
 
   final LocalStore _store;
   static const _key = 'tasks';
 
-  Future<List<Task>> getAll() async {
-    final list = _store.readJsonList(_key) ?? [];
+  Future<List<Task>> getAll({String? userId}) async {
+    final list = _store.readJsonList(_key, userId: userId) ?? [];
 
     var tasks = list
         .whereType<Map<String, dynamic>>()
@@ -30,14 +29,18 @@ class LocalTaskRepository {
     }).toList();
 
     if (migrated) {
-      await _store.writeJson(_key, tasks.map((t) => t.toJson()).toList());
+      await _store.writeJson(
+        _key,
+        tasks.map((t) => t.toJson()).toList(),
+        userId: userId,
+      );
     }
 
     return tasks;
   }
 
-  Future<void> upsert(Task task) async {
-    final all = await getAll();
+  Future<void> upsert(Task task, {String? userId}) async {
+    final all = await getAll(userId: userId);
     final idx = all.indexWhere((t) => t.id == task.id);
     final updated = [...all];
     if (idx == -1) {
@@ -45,12 +48,25 @@ class LocalTaskRepository {
     } else {
       updated[idx] = task;
     }
-    await _store.writeJson(_key, updated.map((t) => t.toJson()).toList());
+    await _store.writeJson(
+      _key,
+      updated.map((t) => t.toJson()).toList(),
+      userId: userId,
+    );
   }
 
-  Future<void> delete(String id) async {
-    final all = await getAll();
+  Future<void> delete(String id, {String? userId}) async {
+    final all = await getAll(userId: userId);
     final updated = all.where((t) => t.id != id).toList();
-    await _store.writeJson(_key, updated.map((t) => t.toJson()).toList());
+    await _store.writeJson(
+      _key,
+      updated.map((t) => t.toJson()).toList(),
+      userId: userId,
+    );
+  }
+
+  /// Clear all local tasks for a specific user or guest
+  Future<void> clear({String? userId}) async {
+    await _store.remove(_key, userId: userId);
   }
 }

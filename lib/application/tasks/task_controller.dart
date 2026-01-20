@@ -7,10 +7,19 @@ final taskControllerProvider =
     AsyncNotifierProvider<TaskController, List<Task>>(TaskController.new);
 
 class TaskController extends AsyncNotifier<List<Task>> {
-  TaskRepository get _repo => ref.read(taskRepositoryProvider);
-
   @override
   Future<List<Task>> build() async {
+    // ✅ Watch both auth state AND userId to rebuild when either changes
+    ref.watch(isAuthenticatedProvider);
+    ref.watch(currentUserIdProvider);
+
+    final all = await _fetchAndSort();
+    return all;
+  }
+
+  TaskRepository get _repo => ref.read(taskRepositoryProvider);
+
+  Future<List<Task>> _fetchAndSort() async {
     final all = await _repo.getAll();
     all.sort((a, b) {
       final d = a.day.compareTo(b.day);
@@ -23,41 +32,20 @@ class TaskController extends AsyncNotifier<List<Task>> {
   }
 
   Future<void> upsert(Task task) async {
-    // ✅ FIX: Save to repository FIRST, then update state
+    // Save to repository FIRST
     await _repo.upsert(task);
 
-    // Only update state after successful save
-    final current = state.value ?? [];
-    state = AsyncData(_upsertInMemory(current, task));
+    // Then refetch to ensure consistency
+    final updated = await _fetchAndSort();
+    state = AsyncData(updated);
   }
 
   Future<void> delete(String id) async {
-    // ✅ FIX: Delete from repository FIRST, then update state
+    // Delete from repository FIRST
     await _repo.delete(id);
 
-    // Only update state after successful delete
-    final current = state.value ?? [];
-    state = AsyncData(current.where((t) => t.id != id).toList());
-  }
-
-  List<Task> _upsertInMemory(List<Task> list, Task task) {
-    final idx = list.indexWhere((t) => t.id == task.id);
-    final updated = [...list];
-    if (idx == -1) {
-      updated.add(task);
-    } else {
-      updated[idx] = task;
-    }
-
-    // Sort after updating
-    updated.sort((a, b) {
-      final d = a.day.compareTo(b.day);
-      if (d != 0) return d;
-      final aStart = a.startAt ?? a.day;
-      final bStart = b.startAt ?? b.day;
-      return aStart.compareTo(bStart);
-    });
-
-    return updated;
+    // Then refetch to ensure consistency
+    final updated = await _fetchAndSort();
+    state = AsyncData(updated);
   }
 }

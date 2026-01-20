@@ -7,63 +7,88 @@ class TaskRepository {
     required this.localRepo,
     required this.supabaseRepo,
     required this.isAuthenticated,
+    this.userId,
   });
 
   final LocalTaskRepository localRepo;
   final SupabaseTaskDatasource supabaseRepo;
   final bool isAuthenticated;
+  final String? userId;
 
-  /// Get all tasks - from Supabase if authenticated, otherwise local
+  /// Get all tasks
+  /// - Guest: Fetch from local storage with guest prefix
+  /// - Authenticated: Fetch from Supabase, cache locally with user prefix
   Future<List<Task>> getAll() async {
-    if (isAuthenticated) {
+    if (isAuthenticated && userId != null) {
       try {
+        print('📥 [User: $userId] Fetching tasks from Supabase...');
         final tasks = await supabaseRepo.getAllTasks();
+        print('✅ Fetched ${tasks.length} tasks from Supabase');
 
-        // Also save to local for offline access
+        // Cache to local storage with user-specific key
         if (tasks.isNotEmpty) {
           for (final task in tasks) {
-            await localRepo.upsert(task);
+            await localRepo.upsert(task, userId: userId);
           }
+          print('💾 Cached ${tasks.length} tasks to local storage');
         }
         return tasks;
       } catch (e) {
-        print('Supabase fetch failed, using local: $e');
-        return await localRepo.getAll();
+        print('❌ Supabase fetch failed, using local cache: $e');
+        return await localRepo.getAll(userId: userId);
       }
     }
 
-    return await localRepo.getAll();
+    // Guest mode: use local storage only
+    print('📱 [Guest] Fetching tasks from local storage...');
+    final tasks = await localRepo.getAll(); // No userId = guest prefix
+    print('✅ Fetched ${tasks.length} guest tasks from local');
+    return tasks;
   }
 
-  /// Save/update task - to Supabase if authenticated, otherwise local
+  /// Save/update task
   Future<void> upsert(Task task) async {
-    // Always save to local first for offline access
-    await localRepo.upsert(task);
+    if (isAuthenticated && userId != null) {
+      print('💾 [User: $userId] Saving task: ${task.title}');
 
-    // Also save to Supabase if authenticated
-    if (isAuthenticated) {
+      // Save to local with user-specific key
+      await localRepo.upsert(task, userId: userId);
+      print('✅ Saved to local cache');
+
+      // Sync to Supabase
       try {
         await supabaseRepo.upsertTask(task);
+        print('✅ Synced to Supabase');
       } catch (e) {
-        print('Supabase upsert failed: $e');
-        // Continue anyway - data is in local storage
+        print('❌ Supabase sync failed: $e');
       }
+    } else {
+      // Guest mode: save to local only
+      print('💾 [Guest] Saving task: ${task.title}');
+      await localRepo.upsert(task); // No userId = guest prefix
+      print('✅ Saved to guest local storage');
     }
   }
 
-  /// Delete task - from Supabase if authenticated, otherwise local
+  /// Delete task
   Future<void> delete(String id) async {
-    // Always delete from local
-    await localRepo.delete(id);
+    if (isAuthenticated && userId != null) {
+      print('🗑️ [User: $userId] Deleting task: $id');
 
-    // Also delete from Supabase if authenticated
-    if (isAuthenticated) {
+      await localRepo.delete(id, userId: userId);
+      print('✅ Deleted from local cache');
+
       try {
         await supabaseRepo.deleteTask(id);
+        print('✅ Deleted from Supabase');
       } catch (e) {
-        print('Supabase delete failed: $e');
-        // Continue anyway - deleted from local storage
+        print('❌ Supabase delete failed: $e');
       }
+    } else {
+      // Guest mode
+      print('🗑️ [Guest] Deleting task: $id');
+      await localRepo.delete(id);
+      print('✅ Deleted from guest local storage');
     }
   }
 }

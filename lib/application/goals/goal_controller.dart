@@ -10,12 +10,16 @@ final goalControllerProvider =
     AsyncNotifierProvider<GoalController, List<Goal>>(GoalController.new);
 
 class GoalController extends AsyncNotifier<List<Goal>> {
-  GoalRepository get _repo => ref.read(goalRepositoryProvider);
-
   @override
   Future<List<Goal>> build() async {
+    // ✅ Watch both auth state AND userId to rebuild when either changes
+    ref.watch(isAuthenticatedProvider);
+    ref.watch(currentUserIdProvider);
+
     return _repo.getAll();
   }
+
+  GoalRepository get _repo => ref.read(goalRepositoryProvider);
 
   Future<void> upsert(Goal goal) async {
     final current = state.value ?? [];
@@ -28,11 +32,12 @@ class GoalController extends AsyncNotifier<List<Goal>> {
       next[idx] = goal;
     }
 
-    // ✅ FIX: Save to repository FIRST
+    // Save to repository FIRST
     await _repo.upsert(goal, next);
 
-    // Then update state
-    state = AsyncData(next);
+    // Then refetch to ensure consistency
+    final updated = await _repo.getAll();
+    state = AsyncData(updated);
   }
 
   Future<void> create({
@@ -55,11 +60,12 @@ class GoalController extends AsyncNotifier<List<Goal>> {
     final currentGoals = state.value ?? [];
     final nextGoals = currentGoals.where((g) => g.id != id).toList();
 
-    // ✅ FIX: Save to repository FIRST
+    // Save to repository FIRST
     await _repo.delete(id, nextGoals);
 
-    // Then update state
-    state = AsyncData(nextGoals);
+    // Then refetch to ensure consistency
+    final updated = await _repo.getAll();
+    state = AsyncData(updated);
 
     // 2) Unlink tasks that reference this goal
     final tasks = ref.read(taskControllerProvider).value ?? [];
