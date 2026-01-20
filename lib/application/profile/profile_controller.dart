@@ -22,25 +22,12 @@ class ProfileController extends AsyncNotifier<Profile> {
 
     final isAuthenticated = userId != null;
 
-    print(
-      '🔧 ProfileController.build() - isAuth: $isAuthenticated, userId: $userId',
-    );
-
     // Try to get from repository (checks Supabase first if authenticated)
     final existing = await repo.get();
 
     if (existing != null) {
-      print(
-        '📋 Found existing profile: ID=${existing.id}, Level=${existing.level}, XP=${existing.totalXp}',
-      );
-
       // If authenticated and profile ID doesn't match user ID, it's stale - create fresh profile
       if (isAuthenticated && existing.id != userId) {
-        print(
-          '⚠️ Profile ID mismatch! existing.id=${existing.id}, userId=$userId',
-        );
-        print('🆕 Creating fresh user profile...');
-
         final now = DateTime.now();
         final fresh = Profile(
           id: userId,
@@ -58,7 +45,6 @@ class ProfileController extends AsyncNotifier<Profile> {
       // Recompute level from totalXp (in case leveling logic changed)
       final computed = computeLevelFromTotalXp(existing.totalXp);
       if (computed.level != existing.level) {
-        print('🔄 Level recomputed: ${existing.level} → ${computed.level}');
         final safe = existing.copyWith(level: computed.level);
         await repo.save(safe);
         return safe;
@@ -72,10 +58,6 @@ class ProfileController extends AsyncNotifier<Profile> {
 
     // IMPORTANT: Use Supabase user ID if authenticated, otherwise generate guest ID
     final profileId = userId ?? const Uuid().v4();
-
-    print(
-      '🆕 Creating new profile with ID: $profileId (${isAuthenticated ? "User" : "Guest"})',
-    );
 
     final fresh = Profile(
       id: profileId,
@@ -98,10 +80,6 @@ class ProfileController extends AsyncNotifier<Profile> {
     final current = state.value!;
     final nextTotal = current.totalXp + amount;
     final computed = computeLevelFromTotalXp(nextTotal);
-
-    print(
-      '➕ Adding $amount XP: ${current.totalXp} → $nextTotal (Level ${computed.level})',
-    );
 
     final updated = current.copyWith(
       totalXp: nextTotal,

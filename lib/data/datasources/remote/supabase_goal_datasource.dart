@@ -23,28 +23,21 @@ class SupabaseGoalDatasource {
       final goals = <Goal>[];
       for (var i = 0; i < (response as List).length; i++) {
         try {
-          final json = response[i] as Map<String, dynamic>;
+          final json = response[i];
 
           // ✅ Remove user_id before parsing
           final cleanJson = Map<String, dynamic>.from(json);
           cleanJson.remove('user_id');
 
-          print('🔍 Parsing goal $i: ${cleanJson['title']}');
-
           final goal = Goal.fromJson(cleanJson);
           goals.add(goal);
-          print('   ✅ Successfully parsed');
-        } catch (e, stack) {
+        } catch (e) {
           print('❌ Error parsing goal at index $i: $e');
-          print('Stack trace: $stack');
         }
       }
 
-      print('✅ Successfully parsed ${goals.length} goals');
       return goals;
-    } catch (e, stack) {
-      print('❌ Error fetching goals: $e');
-      print('Stack trace: $stack');
+    } catch (e) {
       return [];
     }
   }
@@ -78,9 +71,7 @@ class SupabaseGoalDatasource {
           'created_at': goal.createdAt.toIso8601String(),
         });
       }
-    } catch (e, stack) {
-      print('❌ Error upserting goal: $e');
-      print('Stack trace: $stack');
+    } catch (e) {
       rethrow;
     }
   }
@@ -96,9 +87,7 @@ class SupabaseGoalDatasource {
           .delete()
           .eq('id', goalId)
           .eq('user_id', userId);
-    } catch (e, stack) {
-      print('❌ Error deleting goal: $e');
-      print('Stack trace: $stack');
+    } catch (e) {
       rethrow;
     }
   }

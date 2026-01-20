@@ -12,7 +12,6 @@ import '../data/datasources/remote/supabase_goal_datasource.dart';
 import '../data/repositories/task_repository.dart';
 import '../data/repositories/profile_repository.dart';
 import '../data/repositories/goal_repository.dart';
-import '../domain/models/auth_state.dart';
 
 final sharedPrefsProvider = Provider<SharedPreferences>((ref) {
   throw UnimplementedError('Override in main.dart');
@@ -45,7 +44,6 @@ final currentUserIdProvider = Provider<String?>((ref) {
   final user = Supabase.instance.client.auth.currentUser;
   final userId = user?.id;
 
-  print('🆔 currentUserIdProvider: userId=$userId');
   return userId;
 });
 
@@ -69,8 +67,6 @@ final taskRepositoryProvider = Provider<TaskRepository>((ref) {
   final supabaseRepo = ref.read(supabaseTaskDatasourceProvider);
   final isAuthenticated = ref.watch(isAuthenticatedProvider);
   final userId = ref.watch(currentUserIdProvider);
-
-  print('🏗️ TaskRepository: isAuth=$isAuthenticated, userId=$userId');
 
   return TaskRepository(
     localRepo: localRepo,
@@ -103,8 +99,6 @@ final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
   final isAuthenticated = ref.watch(isAuthenticatedProvider);
   final userId = ref.watch(currentUserIdProvider);
 
-  print('🏗️ ProfileRepository: isAuth=$isAuthenticated, userId=$userId');
-
   return ProfileRepository(
     localRepo: localRepo,
     supabaseRepo: supabaseRepo,
@@ -133,8 +127,6 @@ final goalRepositoryProvider = Provider<GoalRepository>((ref) {
   final supabaseRepo = ref.read(supabaseGoalDatasourceProvider);
   final isAuthenticated = ref.watch(isAuthenticatedProvider);
   final userId = ref.watch(currentUserIdProvider);
-
-  print('🏗️ GoalRepository: isAuth=$isAuthenticated, userId=$userId');
 
   return GoalRepository(
     localRepo: localRepo,

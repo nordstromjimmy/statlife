@@ -18,65 +18,26 @@ class SupabaseTaskDatasource {
           .eq('user_id', userId)
           .order('day', ascending: true);
 
-      print('📦 Raw Supabase tasks response: $response');
-
       final tasks = <Task>[];
       for (var i = 0; i < (response as List).length; i++) {
         try {
-          final json = response[i] as Map<String, dynamic>;
+          final json = response[i];
 
           // ✅ Remove user_id before parsing
           final cleanJson = Map<String, dynamic>.from(json);
           cleanJson.remove('user_id');
 
-          print('🔍 Parsing task $i:');
-          print(
-            '   Title: ${cleanJson['title']} (${cleanJson['title'].runtimeType})',
-          );
-          print('   ID: ${cleanJson['id']} (${cleanJson['id'].runtimeType})');
-          print(
-            '   Day: ${cleanJson['day']} (${cleanJson['day'].runtimeType})',
-          );
-          print(
-            '   Start: ${cleanJson['start_at']} (${cleanJson['start_at'].runtimeType})',
-          );
-          print(
-            '   End: ${cleanJson['end_at']} (${cleanJson['end_at'].runtimeType})',
-          );
-          print('   XP: ${cleanJson['xp']} (${cleanJson['xp'].runtimeType})');
-          print(
-            '   Goal ID: ${cleanJson['goal_id']} (${cleanJson['goal_id'].runtimeType})',
-          );
-          print(
-            '   Completed: ${cleanJson['completed_at']} (${cleanJson['completed_at'].runtimeType})',
-          );
-          print(
-            '   First Completed: ${cleanJson['first_completed_at']} (${cleanJson['first_completed_at'].runtimeType})',
-          );
-          print(
-            '   Created: ${cleanJson['created_at']} (${cleanJson['created_at'].runtimeType})',
-          );
-          print(
-            '   Updated: ${cleanJson['updated_at']} (${cleanJson['updated_at'].runtimeType})',
-          );
-
-          print('   🚀 Attempting to parse with Task.fromJson...');
           final task = Task.fromJson(cleanJson);
           tasks.add(task);
-          print('   ✅ Successfully parsed: ${task.title}');
-        } catch (e, stack) {
+        } catch (e) {
           print('❌ Error parsing task at index $i: $e');
-          print('Full stack trace:');
-          print(stack);
           //print('Problematic JSON after cleanup: $cleanJson');
         }
       }
 
-      print('✅ Successfully parsed ${tasks.length} tasks');
       return tasks;
-    } catch (e, stack) {
+    } catch (e) {
       print('❌ Error fetching tasks: $e');
-      print('Stack trace: $stack');
       return [];
     }
   }
@@ -115,9 +76,8 @@ class SupabaseTaskDatasource {
           'created_at': task.createdAt.toIso8601String(),
         });
       }
-    } catch (e, stack) {
+    } catch (e) {
       print('❌ Error upserting task: $e');
-      print('Stack trace: $stack');
       rethrow;
     }
   }
@@ -133,9 +93,8 @@ class SupabaseTaskDatasource {
           .delete()
           .eq('id', taskId)
           .eq('user_id', userId);
-    } catch (e, stack) {
+    } catch (e) {
       print('❌ Error deleting task: $e');
-      print('Stack trace: $stack');
       rethrow;
     }
   }
