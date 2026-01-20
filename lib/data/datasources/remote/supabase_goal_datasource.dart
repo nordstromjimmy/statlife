@@ -18,9 +18,33 @@ class SupabaseGoalDatasource {
           .eq('user_id', userId)
           .order('created_at', ascending: false);
 
-      return (response as List).map((json) => Goal.fromJson(json)).toList();
-    } catch (e) {
-      print('Error fetching goals: $e');
+      print('📦 Raw Supabase goals response: $response');
+
+      final goals = <Goal>[];
+      for (var i = 0; i < (response as List).length; i++) {
+        try {
+          final json = response[i] as Map<String, dynamic>;
+
+          // ✅ Remove user_id before parsing
+          final cleanJson = Map<String, dynamic>.from(json);
+          cleanJson.remove('user_id');
+
+          print('🔍 Parsing goal $i: ${cleanJson['title']}');
+
+          final goal = Goal.fromJson(cleanJson);
+          goals.add(goal);
+          print('   ✅ Successfully parsed');
+        } catch (e, stack) {
+          print('❌ Error parsing goal at index $i: $e');
+          print('Stack trace: $stack');
+        }
+      }
+
+      print('✅ Successfully parsed ${goals.length} goals');
+      return goals;
+    } catch (e, stack) {
+      print('❌ Error fetching goals: $e');
+      print('Stack trace: $stack');
       return [];
     }
   }
@@ -31,38 +55,32 @@ class SupabaseGoalDatasource {
     if (userId == null) throw Exception('No authenticated user');
 
     try {
-      // Check if goal exists
       final existing = await _client
           .from('goals')
           .select()
           .eq('id', goal.id)
           .maybeSingle();
 
+      final goalData = {
+        'title': goal.title,
+        'default_duration_minutes': goal.defaultDurationMinutes,
+        'archived_at': goal.archivedAt?.toIso8601String(),
+        'updated_at': goal.updatedAt.toIso8601String(),
+      };
+
       if (existing != null) {
-        // Update existing goal
-        await _client
-            .from('goals')
-            .update({
-              'title': goal.title,
-              'default_duration_minutes': goal.defaultDurationMinutes,
-              'archived_at': goal.archivedAt?.toIso8601String(),
-              'updated_at': goal.updatedAt.toIso8601String(),
-            })
-            .eq('id', goal.id);
+        await _client.from('goals').update(goalData).eq('id', goal.id);
       } else {
-        // Insert new goal
         await _client.from('goals').insert({
           'id': goal.id,
           'user_id': userId,
-          'title': goal.title,
-          'default_duration_minutes': goal.defaultDurationMinutes,
-          'archived_at': goal.archivedAt?.toIso8601String(),
+          ...goalData,
           'created_at': goal.createdAt.toIso8601String(),
-          'updated_at': goal.updatedAt.toIso8601String(),
         });
       }
-    } catch (e) {
-      print('Error upserting goal: $e');
+    } catch (e, stack) {
+      print('❌ Error upserting goal: $e');
+      print('Stack trace: $stack');
       rethrow;
     }
   }
@@ -77,9 +95,10 @@ class SupabaseGoalDatasource {
           .from('goals')
           .delete()
           .eq('id', goalId)
-          .eq('user_id', userId); // Security: only delete own goals
-    } catch (e) {
-      print('Error deleting goal: $e');
+          .eq('user_id', userId);
+    } catch (e, stack) {
+      print('❌ Error deleting goal: $e');
+      print('Stack trace: $stack');
       rethrow;
     }
   }

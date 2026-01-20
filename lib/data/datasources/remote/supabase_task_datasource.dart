@@ -16,12 +16,67 @@ class SupabaseTaskDatasource {
           .from('tasks')
           .select()
           .eq('user_id', userId)
-          .order('day', ascending: true)
-          .order('start_at', ascending: true);
+          .order('day', ascending: true);
 
-      return (response as List).map((json) => Task.fromJson(json)).toList();
-    } catch (e) {
-      print('Error fetching tasks: $e');
+      print('📦 Raw Supabase tasks response: $response');
+
+      final tasks = <Task>[];
+      for (var i = 0; i < (response as List).length; i++) {
+        try {
+          final json = response[i] as Map<String, dynamic>;
+
+          // ✅ Remove user_id before parsing
+          final cleanJson = Map<String, dynamic>.from(json);
+          cleanJson.remove('user_id');
+
+          print('🔍 Parsing task $i:');
+          print(
+            '   Title: ${cleanJson['title']} (${cleanJson['title'].runtimeType})',
+          );
+          print('   ID: ${cleanJson['id']} (${cleanJson['id'].runtimeType})');
+          print(
+            '   Day: ${cleanJson['day']} (${cleanJson['day'].runtimeType})',
+          );
+          print(
+            '   Start: ${cleanJson['start_at']} (${cleanJson['start_at'].runtimeType})',
+          );
+          print(
+            '   End: ${cleanJson['end_at']} (${cleanJson['end_at'].runtimeType})',
+          );
+          print('   XP: ${cleanJson['xp']} (${cleanJson['xp'].runtimeType})');
+          print(
+            '   Goal ID: ${cleanJson['goal_id']} (${cleanJson['goal_id'].runtimeType})',
+          );
+          print(
+            '   Completed: ${cleanJson['completed_at']} (${cleanJson['completed_at'].runtimeType})',
+          );
+          print(
+            '   First Completed: ${cleanJson['first_completed_at']} (${cleanJson['first_completed_at'].runtimeType})',
+          );
+          print(
+            '   Created: ${cleanJson['created_at']} (${cleanJson['created_at'].runtimeType})',
+          );
+          print(
+            '   Updated: ${cleanJson['updated_at']} (${cleanJson['updated_at'].runtimeType})',
+          );
+
+          print('   🚀 Attempting to parse with Task.fromJson...');
+          final task = Task.fromJson(cleanJson);
+          tasks.add(task);
+          print('   ✅ Successfully parsed: ${task.title}');
+        } catch (e, stack) {
+          print('❌ Error parsing task at index $i: $e');
+          print('Full stack trace:');
+          print(stack);
+          //print('Problematic JSON after cleanup: $cleanJson');
+        }
+      }
+
+      print('✅ Successfully parsed ${tasks.length} tasks');
+      return tasks;
+    } catch (e, stack) {
+      print('❌ Error fetching tasks: $e');
+      print('Stack trace: $stack');
       return [];
     }
   }
@@ -32,48 +87,37 @@ class SupabaseTaskDatasource {
     if (userId == null) throw Exception('No authenticated user');
 
     try {
-      // Check if task exists
       final existing = await _client
           .from('tasks')
           .select()
           .eq('id', task.id)
           .maybeSingle();
 
+      final taskData = {
+        'title': task.title,
+        'day': task.day.toIso8601String().split('T')[0],
+        'start_at': task.startAt?.toIso8601String(),
+        'end_at': task.endAt?.toIso8601String(),
+        'xp': task.xp,
+        'goal_id': task.goalId,
+        'completed_at': task.completedAt?.toIso8601String(),
+        'first_completed_at': task.firstCompletedAt?.toIso8601String(),
+        'updated_at': task.updatedAt.toIso8601String(),
+      };
+
       if (existing != null) {
-        // Update existing task
-        await _client
-            .from('tasks')
-            .update({
-              'title': task.title,
-              'day': task.day.toIso8601String().split('T')[0], // Date only
-              'start_at': task.startAt?.toIso8601String(),
-              'end_at': task.endAt?.toIso8601String(),
-              'xp': task.xp,
-              'goal_id': task.goalId,
-              'completed_at': task.completedAt?.toIso8601String(),
-              'first_completed_at': task.firstCompletedAt?.toIso8601String(),
-              'updated_at': task.updatedAt.toIso8601String(),
-            })
-            .eq('id', task.id);
+        await _client.from('tasks').update(taskData).eq('id', task.id);
       } else {
-        // Insert new task
         await _client.from('tasks').insert({
           'id': task.id,
           'user_id': userId,
-          'title': task.title,
-          'day': task.day.toIso8601String().split('T')[0],
-          'start_at': task.startAt?.toIso8601String(),
-          'end_at': task.endAt?.toIso8601String(),
-          'xp': task.xp,
-          'goal_id': task.goalId,
-          'completed_at': task.completedAt?.toIso8601String(),
-          'first_completed_at': task.firstCompletedAt?.toIso8601String(),
+          ...taskData,
           'created_at': task.createdAt.toIso8601String(),
-          'updated_at': task.updatedAt.toIso8601String(),
         });
       }
-    } catch (e) {
-      print('Error upserting task: $e');
+    } catch (e, stack) {
+      print('❌ Error upserting task: $e');
+      print('Stack trace: $stack');
       rethrow;
     }
   }
@@ -88,9 +132,10 @@ class SupabaseTaskDatasource {
           .from('tasks')
           .delete()
           .eq('id', taskId)
-          .eq('user_id', userId); // Security: only delete own tasks
-    } catch (e) {
-      print('Error deleting task: $e');
+          .eq('user_id', userId);
+    } catch (e, stack) {
+      print('❌ Error deleting task: $e');
+      print('Stack trace: $stack');
       rethrow;
     }
   }

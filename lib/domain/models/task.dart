@@ -8,24 +8,15 @@ class Task with _$Task {
   const factory Task({
     required String id,
     required String title,
-
-    /// Calendar day this task belongs to (date-only usage in UI)
     required DateTime day,
-
-    /// Timed span (required going forward). Old tasks may be null until migrated.
-    DateTime? startAt,
-    DateTime? endAt,
-
-    /// XP granted when completed
+    @JsonKey(name: 'start_at') DateTime? startAt,
+    @JsonKey(name: 'end_at') DateTime? endAt,
     @Default(10) int xp,
-    String? goalId,
-
-    /// null = not completed
-    DateTime? completedAt,
-    DateTime? firstCompletedAt,
-
-    required DateTime createdAt,
-    required DateTime updatedAt,
+    @JsonKey(name: 'goal_id') String? goalId,
+    @JsonKey(name: 'completed_at') DateTime? completedAt,
+    @JsonKey(name: 'first_completed_at') DateTime? firstCompletedAt,
+    @JsonKey(name: 'created_at') required DateTime createdAt,
+    @JsonKey(name: 'updated_at') required DateTime updatedAt,
   }) = _Task;
 
   factory Task.fromJson(Map<String, dynamic> json) => _$TaskFromJson(json);
@@ -33,10 +24,8 @@ class Task with _$Task {
 
 extension TaskX on Task {
   bool get isCompleted => completedAt != null;
-
   bool get hasTimeSpan => startAt != null && endAt != null;
 
-  /// Duration in minutes (safe default if missing)
   int get durationMinutes {
     if (!hasTimeSpan) return 30;
     return endAt!.difference(startAt!).inMinutes.clamp(1, 24 * 60);

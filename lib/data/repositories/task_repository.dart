@@ -26,24 +26,47 @@ class TaskRepository {
         print('✅ Fetched ${tasks.length} tasks from Supabase');
 
         // Cache to local storage with user-specific key
-        if (tasks.isNotEmpty) {
-          for (final task in tasks) {
-            await localRepo.upsert(task, userId: userId);
+        try {
+          // Clear old local cache first to avoid conflicts
+          await localRepo.clear(userId: userId);
+
+          if (tasks.isNotEmpty) {
+            for (final task in tasks) {
+              await localRepo.upsert(task, userId: userId);
+            }
+            print('💾 Cached ${tasks.length} tasks to local storage');
           }
-          print('💾 Cached ${tasks.length} tasks to local storage');
+        } catch (cacheError) {
+          print('⚠️ Failed to cache tasks locally: $cacheError');
+          // Continue anyway - we have the data from Supabase
         }
+
         return tasks;
       } catch (e) {
-        print('❌ Supabase fetch failed, using local cache: $e');
-        return await localRepo.getAll(userId: userId);
+        print('❌ Supabase fetch failed, trying local cache: $e');
+        try {
+          return await localRepo.getAll(userId: userId);
+        } catch (localError) {
+          print('❌ Local cache also failed: $localError');
+          // Clear corrupt local data
+          await localRepo.clear(userId: userId);
+          return [];
+        }
       }
     }
 
     // Guest mode: use local storage only
     print('📱 [Guest] Fetching tasks from local storage...');
-    final tasks = await localRepo.getAll(); // No userId = guest prefix
-    print('✅ Fetched ${tasks.length} guest tasks from local');
-    return tasks;
+    try {
+      final tasks = await localRepo.getAll(); // No userId = guest prefix
+      print('✅ Fetched ${tasks.length} guest tasks from local');
+      return tasks;
+    } catch (e) {
+      print('❌ Failed to load guest tasks: $e');
+      // Clear corrupt guest data
+      await localRepo.clear();
+      return [];
+    }
   }
 
   /// Save/update task
@@ -52,8 +75,12 @@ class TaskRepository {
       print('💾 [User: $userId] Saving task: ${task.title}');
 
       // Save to local with user-specific key
-      await localRepo.upsert(task, userId: userId);
-      print('✅ Saved to local cache');
+      try {
+        await localRepo.upsert(task, userId: userId);
+        print('✅ Saved to local cache');
+      } catch (e) {
+        print('⚠️ Failed to save locally: $e');
+      }
 
       // Sync to Supabase
       try {

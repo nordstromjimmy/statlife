@@ -23,9 +23,13 @@ Goal _$GoalFromJson(Map<String, dynamic> json) {
 mixin _$Goal {
   String get id => throw _privateConstructorUsedError;
   String get title => throw _privateConstructorUsedError;
+  @JsonKey(name: 'default_duration_minutes')
   int get defaultDurationMinutes => throw _privateConstructorUsedError;
+  @JsonKey(name: 'archived_at')
   DateTime? get archivedAt => throw _privateConstructorUsedError;
+  @JsonKey(name: 'created_at')
   DateTime get createdAt => throw _privateConstructorUsedError;
+  @JsonKey(name: 'updated_at')
   DateTime get updatedAt => throw _privateConstructorUsedError;
 
   /// Serializes this Goal to a JSON map.
@@ -45,10 +49,10 @@ abstract class $GoalCopyWith<$Res> {
   $Res call({
     String id,
     String title,
-    int defaultDurationMinutes,
-    DateTime? archivedAt,
-    DateTime createdAt,
-    DateTime updatedAt,
+    @JsonKey(name: 'default_duration_minutes') int defaultDurationMinutes,
+    @JsonKey(name: 'archived_at') DateTime? archivedAt,
+    @JsonKey(name: 'created_at') DateTime createdAt,
+    @JsonKey(name: 'updated_at') DateTime updatedAt,
   });
 }
 
@@ -117,10 +121,10 @@ abstract class _$$GoalImplCopyWith<$Res> implements $GoalCopyWith<$Res> {
   $Res call({
     String id,
     String title,
-    int defaultDurationMinutes,
-    DateTime? archivedAt,
-    DateTime createdAt,
-    DateTime updatedAt,
+    @JsonKey(name: 'default_duration_minutes') int defaultDurationMinutes,
+    @JsonKey(name: 'archived_at') DateTime? archivedAt,
+    @JsonKey(name: 'created_at') DateTime createdAt,
+    @JsonKey(name: 'updated_at') DateTime updatedAt,
   });
 }
 
@@ -180,10 +184,10 @@ class _$GoalImpl implements _Goal {
   const _$GoalImpl({
     required this.id,
     required this.title,
-    this.defaultDurationMinutes = 30,
-    this.archivedAt,
-    required this.createdAt,
-    required this.updatedAt,
+    @JsonKey(name: 'default_duration_minutes') this.defaultDurationMinutes = 30,
+    @JsonKey(name: 'archived_at') this.archivedAt,
+    @JsonKey(name: 'created_at') required this.createdAt,
+    @JsonKey(name: 'updated_at') required this.updatedAt,
   });
 
   factory _$GoalImpl.fromJson(Map<String, dynamic> json) =>
@@ -194,13 +198,16 @@ class _$GoalImpl implements _Goal {
   @override
   final String title;
   @override
-  @JsonKey()
+  @JsonKey(name: 'default_duration_minutes')
   final int defaultDurationMinutes;
   @override
+  @JsonKey(name: 'archived_at')
   final DateTime? archivedAt;
   @override
+  @JsonKey(name: 'created_at')
   final DateTime createdAt;
   @override
+  @JsonKey(name: 'updated_at')
   final DateTime updatedAt;
 
   @override
@@ -255,10 +262,10 @@ abstract class _Goal implements Goal {
   const factory _Goal({
     required final String id,
     required final String title,
-    final int defaultDurationMinutes,
-    final DateTime? archivedAt,
-    required final DateTime createdAt,
-    required final DateTime updatedAt,
+    @JsonKey(name: 'default_duration_minutes') final int defaultDurationMinutes,
+    @JsonKey(name: 'archived_at') final DateTime? archivedAt,
+    @JsonKey(name: 'created_at') required final DateTime createdAt,
+    @JsonKey(name: 'updated_at') required final DateTime updatedAt,
   }) = _$GoalImpl;
 
   factory _Goal.fromJson(Map<String, dynamic> json) = _$GoalImpl.fromJson;
@@ -268,12 +275,16 @@ abstract class _Goal implements Goal {
   @override
   String get title;
   @override
+  @JsonKey(name: 'default_duration_minutes')
   int get defaultDurationMinutes;
   @override
+  @JsonKey(name: 'archived_at')
   DateTime? get archivedAt;
   @override
+  @JsonKey(name: 'created_at')
   DateTime get createdAt;
   @override
+  @JsonKey(name: 'updated_at')
   DateTime get updatedAt;
 
   /// Create a copy of Goal

@@ -23,22 +23,21 @@ Task _$TaskFromJson(Map<String, dynamic> json) {
 mixin _$Task {
   String get id => throw _privateConstructorUsedError;
   String get title => throw _privateConstructorUsedError;
-
-  /// Calendar day this task belongs to (date-only usage in UI)
   DateTime get day => throw _privateConstructorUsedError;
-
-  /// Timed span (required going forward). Old tasks may be null until migrated.
+  @JsonKey(name: 'start_at')
   DateTime? get startAt => throw _privateConstructorUsedError;
+  @JsonKey(name: 'end_at')
   DateTime? get endAt => throw _privateConstructorUsedError;
-
-  /// XP granted when completed
   int get xp => throw _privateConstructorUsedError;
+  @JsonKey(name: 'goal_id')
   String? get goalId => throw _privateConstructorUsedError;
-
-  /// null = not completed
+  @JsonKey(name: 'completed_at')
   DateTime? get completedAt => throw _privateConstructorUsedError;
+  @JsonKey(name: 'first_completed_at')
   DateTime? get firstCompletedAt => throw _privateConstructorUsedError;
+  @JsonKey(name: 'created_at')
   DateTime get createdAt => throw _privateConstructorUsedError;
+  @JsonKey(name: 'updated_at')
   DateTime get updatedAt => throw _privateConstructorUsedError;
 
   /// Serializes this Task to a JSON map.
@@ -59,14 +58,14 @@ abstract class $TaskCopyWith<$Res> {
     String id,
     String title,
     DateTime day,
-    DateTime? startAt,
-    DateTime? endAt,
+    @JsonKey(name: 'start_at') DateTime? startAt,
+    @JsonKey(name: 'end_at') DateTime? endAt,
     int xp,
-    String? goalId,
-    DateTime? completedAt,
-    DateTime? firstCompletedAt,
-    DateTime createdAt,
-    DateTime updatedAt,
+    @JsonKey(name: 'goal_id') String? goalId,
+    @JsonKey(name: 'completed_at') DateTime? completedAt,
+    @JsonKey(name: 'first_completed_at') DateTime? firstCompletedAt,
+    @JsonKey(name: 'created_at') DateTime createdAt,
+    @JsonKey(name: 'updated_at') DateTime updatedAt,
   });
 }
 
@@ -161,14 +160,14 @@ abstract class _$$TaskImplCopyWith<$Res> implements $TaskCopyWith<$Res> {
     String id,
     String title,
     DateTime day,
-    DateTime? startAt,
-    DateTime? endAt,
+    @JsonKey(name: 'start_at') DateTime? startAt,
+    @JsonKey(name: 'end_at') DateTime? endAt,
     int xp,
-    String? goalId,
-    DateTime? completedAt,
-    DateTime? firstCompletedAt,
-    DateTime createdAt,
-    DateTime updatedAt,
+    @JsonKey(name: 'goal_id') String? goalId,
+    @JsonKey(name: 'completed_at') DateTime? completedAt,
+    @JsonKey(name: 'first_completed_at') DateTime? firstCompletedAt,
+    @JsonKey(name: 'created_at') DateTime createdAt,
+    @JsonKey(name: 'updated_at') DateTime updatedAt,
   });
 }
 
@@ -254,14 +253,14 @@ class _$TaskImpl implements _Task {
     required this.id,
     required this.title,
     required this.day,
-    this.startAt,
-    this.endAt,
+    @JsonKey(name: 'start_at') this.startAt,
+    @JsonKey(name: 'end_at') this.endAt,
     this.xp = 10,
-    this.goalId,
-    this.completedAt,
-    this.firstCompletedAt,
-    required this.createdAt,
-    required this.updatedAt,
+    @JsonKey(name: 'goal_id') this.goalId,
+    @JsonKey(name: 'completed_at') this.completedAt,
+    @JsonKey(name: 'first_completed_at') this.firstCompletedAt,
+    @JsonKey(name: 'created_at') required this.createdAt,
+    @JsonKey(name: 'updated_at') required this.updatedAt,
   });
 
   factory _$TaskImpl.fromJson(Map<String, dynamic> json) =>
@@ -271,32 +270,31 @@ class _$TaskImpl implements _Task {
   final String id;
   @override
   final String title;
-
-  /// Calendar day this task belongs to (date-only usage in UI)
   @override
   final DateTime day;
-
-  /// Timed span (required going forward). Old tasks may be null until migrated.
   @override
+  @JsonKey(name: 'start_at')
   final DateTime? startAt;
   @override
+  @JsonKey(name: 'end_at')
   final DateTime? endAt;
-
-  /// XP granted when completed
   @override
   @JsonKey()
   final int xp;
   @override
+  @JsonKey(name: 'goal_id')
   final String? goalId;
-
-  /// null = not completed
   @override
+  @JsonKey(name: 'completed_at')
   final DateTime? completedAt;
   @override
+  @JsonKey(name: 'first_completed_at')
   final DateTime? firstCompletedAt;
   @override
+  @JsonKey(name: 'created_at')
   final DateTime createdAt;
   @override
+  @JsonKey(name: 'updated_at')
   final DateTime updatedAt;
 
   @override
@@ -362,14 +360,14 @@ abstract class _Task implements Task {
     required final String id,
     required final String title,
     required final DateTime day,
-    final DateTime? startAt,
-    final DateTime? endAt,
+    @JsonKey(name: 'start_at') final DateTime? startAt,
+    @JsonKey(name: 'end_at') final DateTime? endAt,
     final int xp,
-    final String? goalId,
-    final DateTime? completedAt,
-    final DateTime? firstCompletedAt,
-    required final DateTime createdAt,
-    required final DateTime updatedAt,
+    @JsonKey(name: 'goal_id') final String? goalId,
+    @JsonKey(name: 'completed_at') final DateTime? completedAt,
+    @JsonKey(name: 'first_completed_at') final DateTime? firstCompletedAt,
+    @JsonKey(name: 'created_at') required final DateTime createdAt,
+    @JsonKey(name: 'updated_at') required final DateTime updatedAt,
   }) = _$TaskImpl;
 
   factory _Task.fromJson(Map<String, dynamic> json) = _$TaskImpl.fromJson;
@@ -378,31 +376,30 @@ abstract class _Task implements Task {
   String get id;
   @override
   String get title;
-
-  /// Calendar day this task belongs to (date-only usage in UI)
   @override
   DateTime get day;
-
-  /// Timed span (required going forward). Old tasks may be null until migrated.
   @override
+  @JsonKey(name: 'start_at')
   DateTime? get startAt;
   @override
+  @JsonKey(name: 'end_at')
   DateTime? get endAt;
-
-  /// XP granted when completed
   @override
   int get xp;
   @override
+  @JsonKey(name: 'goal_id')
   String? get goalId;
-
-  /// null = not completed
   @override
+  @JsonKey(name: 'completed_at')
   DateTime? get completedAt;
   @override
+  @JsonKey(name: 'first_completed_at')
   DateTime? get firstCompletedAt;
   @override
+  @JsonKey(name: 'created_at')
   DateTime get createdAt;
   @override
+  @JsonKey(name: 'updated_at')
   DateTime get updatedAt;
 
   /// Create a copy of Task

@@ -9,13 +9,17 @@ class LocalProfileRepository {
   final LocalStore _store;
   static const _key = 'profile';
 
-  Future<Profile?> get() async {
-    final map = _store.readJsonMap(_key);
+  Future<Profile?> get({String? userId}) async {
+    final map = _store.readJsonMap(_key, userId: userId);
     if (map == null) return null;
     return Profile.fromJson(map);
   }
 
-  Future<void> save(Profile profile) async {
-    await _store.writeJson(_key, profile.toJson());
+  Future<void> save(Profile profile, {String? userId}) async {
+    await _store.writeJson(_key, profile.toJson(), userId: userId);
+  }
+
+  Future<void> clear({String? userId}) async {
+    await _store.remove(_key, userId: userId);
   }
 }

@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../../data/repositories/profile_repository.dart';
 import '../../domain/logic/leveling.dart';
@@ -12,42 +11,71 @@ final profileControllerProvider =
     AsyncNotifierProvider<ProfileController, Profile>(ProfileController.new);
 
 class ProfileController extends AsyncNotifier<Profile> {
-  ProfileRepository get _repo => ref.read(profileRepositoryProvider);
-
   @override
   Future<Profile> build() async {
-    // WAIT for auth state to load first
-    final authState = await ref.watch(authControllerProvider.future);
-    final supabaseUserId = Supabase.instance.client.auth.currentUser?.id;
+    // ✅ Watch both auth state AND userId to rebuild when either changes
+    ref.watch(isAuthenticatedProvider);
+    final userId = ref.watch(currentUserIdProvider);
+
+    // ✅ Get fresh repository instance with current auth state
+    final repo = ref.read(profileRepositoryProvider);
+
+    final isAuthenticated = userId != null;
+
+    print(
+      '🔧 ProfileController.build() - isAuth: $isAuthenticated, userId: $userId',
+    );
 
     // Try to get from repository (checks Supabase first if authenticated)
-    final existing = await _repo.get();
+    final existing = await repo.get();
 
     if (existing != null) {
-      // If we have a local profile but now we're authenticated with different ID, fetch from Supabase
-      if (authState.isAuthenticated &&
-          supabaseUserId != null &&
-          existing.id != supabaseUserId) {
-        final supabaseProfile = await _repo
-            .get(); // This will fetch from Supabase
-        if (supabaseProfile != null && supabaseProfile.id == supabaseUserId) {
-          return supabaseProfile;
-        }
+      print(
+        '📋 Found existing profile: ID=${existing.id}, Level=${existing.level}, XP=${existing.totalXp}',
+      );
+
+      // If authenticated and profile ID doesn't match user ID, it's stale - create fresh profile
+      if (isAuthenticated && existing.id != userId) {
+        print(
+          '⚠️ Profile ID mismatch! existing.id=${existing.id}, userId=$userId',
+        );
+        print('🆕 Creating fresh user profile...');
+
+        final now = DateTime.now();
+        final fresh = Profile(
+          id: userId,
+          name: null,
+          totalXp: 0,
+          level: 1,
+          createdAt: now,
+          updatedAt: now,
+        );
+
+        await repo.save(fresh);
+        return fresh;
       }
 
+      // Recompute level from totalXp (in case leveling logic changed)
       final computed = computeLevelFromTotalXp(existing.totalXp);
-      final safe = existing.copyWith(level: computed.level);
-      if (safe.level != existing.level) {
-        await _repo.save(safe);
+      if (computed.level != existing.level) {
+        print('🔄 Level recomputed: ${existing.level} → ${computed.level}');
+        final safe = existing.copyWith(level: computed.level);
+        await repo.save(safe);
+        return safe;
       }
-      return safe;
+
+      return existing;
     }
 
-    // No existing profile found
+    // No existing profile found - create new one
     final now = DateTime.now();
 
-    // IMPORTANT: Use Supabase user ID if authenticated
-    final profileId = supabaseUserId ?? const Uuid().v4();
+    // IMPORTANT: Use Supabase user ID if authenticated, otherwise generate guest ID
+    final profileId = userId ?? const Uuid().v4();
+
+    print(
+      '🆕 Creating new profile with ID: $profileId (${isAuthenticated ? "User" : "Guest"})',
+    );
 
     final fresh = Profile(
       id: profileId,
@@ -58,16 +86,22 @@ class ProfileController extends AsyncNotifier<Profile> {
       updatedAt: now,
     );
 
-    // Save to local storage (Supabase already has it via trigger for authenticated users)
-    await _repo.localRepo.save(fresh);
+    // Save to appropriate storage
+    await repo.save(fresh);
 
     return fresh;
   }
+
+  ProfileRepository get _repo => ref.read(profileRepositoryProvider);
 
   Future<void> addXp(int amount) async {
     final current = state.value!;
     final nextTotal = current.totalXp + amount;
     final computed = computeLevelFromTotalXp(nextTotal);
+
+    print(
+      '➕ Adding $amount XP: ${current.totalXp} → $nextTotal (Level ${computed.level})',
+    );
 
     final updated = current.copyWith(
       totalXp: nextTotal,
