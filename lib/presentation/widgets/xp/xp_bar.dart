@@ -141,38 +141,6 @@ class XpBarState extends State<XpBar> with TickerProviderStateMixin {
     _pulseController.forward(from: 0.0);
   }
 
-  /*   void _triggerLevelUp() {
-    setState(() => _isLevelingUp = true);
-    
-    _progressAnimation = Tween<double>(
-      begin: _currentVisualProgress,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _progressController,
-      curve: Curves.easeOutCubic,
-    ));
-    
-    _progressController.forward(from: 0.0).then((_) {
-      Future.delayed(const Duration(milliseconds: 300), () {
-        final newProgress = _getProgress();
-        _progressAnimation = Tween<double>(
-          begin: 0.0,
-          end: newProgress,
-        ).animate(CurvedAnimation(
-          parent: _progressController,
-          curve: Curves.easeOutCubic,
-        ));
-        
-        _progressController.forward(from: 0.0).then((_) {
-          _currentVisualProgress = newProgress;
-        });
-        
-        setState(() => _isLevelingUp = false);
-        widget.onLevelUp?.call();
-      });
-    });
-  } */
-
   double _getProgress() {
     return widget.requiredXp > 0
         ? (widget.currentXp / widget.requiredXp).clamp(0.0, 1.0)
@@ -217,12 +185,12 @@ class XpBarState extends State<XpBar> with TickerProviderStateMixin {
         Container(
           height: widget.height,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(widget.borderRadius),
             border: Border.all(
               color: _isLevelingUp
-                  ? Theme.of(context).colorScheme.primary.withOpacity(0.5)
-                  : Colors.white.withOpacity(0.05),
+                  ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.5)
+                  : Colors.white.withValues(alpha: 0.05),
               width: _isLevelingUp ? 2 : 1,
             ),
             boxShadow: _isLevelingUp
@@ -230,7 +198,7 @@ class XpBarState extends State<XpBar> with TickerProviderStateMixin {
                     BoxShadow(
                       color: Theme.of(
                         context,
-                      ).colorScheme.primary.withOpacity(0.4),
+                      ).colorScheme.primary.withValues(alpha: 0.4),
                       blurRadius: 20,
                       spreadRadius: 2,
                     ),
@@ -273,7 +241,7 @@ class XpBarState extends State<XpBar> with TickerProviderStateMixin {
                               BoxShadow(
                                 color: Theme.of(
                                   context,
-                                ).colorScheme.primary.withOpacity(0.5),
+                                ).colorScheme.primary.withValues(alpha: 0.5),
                                 blurRadius: _isLevelingUp ? 12 : 8,
                                 spreadRadius: _isLevelingUp ? 2 : 1,
                               ),
@@ -302,9 +270,9 @@ class XpBarState extends State<XpBar> with TickerProviderStateMixin {
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
-                                  Colors.white.withOpacity(0.0),
-                                  Colors.white.withOpacity(0.3),
-                                  Colors.white.withOpacity(0.0),
+                                  Colors.white.withValues(alpha: 0.0),
+                                  Colors.white.withValues(alpha: 0.3),
+                                  Colors.white.withValues(alpha: 0.0),
                                 ],
                                 stops: const [0.0, 0.5, 1.0],
                               ),
@@ -346,7 +314,7 @@ class _ParticlePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = color.withOpacity(0.6);
+    final paint = Paint()..color = color.withValues(alpha: 0.6);
 
     for (int i = 0; i < 20; i++) {
       final x = _random.nextDouble() * size.width;

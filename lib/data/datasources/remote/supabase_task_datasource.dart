@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../domain/models/task.dart';
 
@@ -29,15 +30,26 @@ class SupabaseTaskDatasource {
 
           final task = Task.fromJson(cleanJson);
           tasks.add(task);
-        } catch (e) {
-          print('❌ Error parsing task at index $i: $e');
-          //print('Problematic JSON after cleanup: $cleanJson');
+        } catch (e, stackTrace) {
+          // Skip corrupted items but log in debug mode
+          if (kDebugMode) {
+            debugPrint('⚠️ Skipped corrupted task at index $i: $e');
+            debugPrint('Stack trace: $stackTrace');
+          }
+          // TODO: Add error tracking service here
+          // errorTracker.recordError(e, stackTrace, reason: 'Failed to parse task');
+          continue;
         }
       }
 
       return tasks;
-    } catch (e) {
-      print('❌ Error fetching tasks: $e');
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('❌ Error fetching tasks: $e');
+        debugPrint('❌ StackTrace: $stackTrace');
+      }
+      // TODO: Add error tracking service here
+      // errorTracker.recordError(e, stackTrace, reason: 'Failed to fetch tasks');
       return [];
     }
   }
@@ -76,8 +88,12 @@ class SupabaseTaskDatasource {
           'created_at': task.createdAt.toIso8601String(),
         });
       }
-    } catch (e) {
-      print('❌ Error upserting task: $e');
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('❌ Error upserting task: $e');
+        debugPrint('❌ StackTrace: $stackTrace');
+      }
+      // TODO: Add error tracking service here
       rethrow;
     }
   }
@@ -93,8 +109,12 @@ class SupabaseTaskDatasource {
           .delete()
           .eq('id', taskId)
           .eq('user_id', userId);
-    } catch (e) {
-      print('❌ Error deleting task: $e');
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('❌ Error deleting task: $e');
+        debugPrint('❌ StackTrace: $stackTrace');
+      }
+      // TODO: Add error tracking service here
       rethrow;
     }
   }

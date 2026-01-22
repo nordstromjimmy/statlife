@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/times.dart';
 import '../../../core/utils/time_utils.dart';
 import '../../../domain/models/task.dart';
-import 'current_timeline.dart';
+import 'current_time_line.dart';
 import 'hour_lines.dart';
 import 'task_block.dart';
 
@@ -33,18 +33,6 @@ class Timeline extends StatefulWidget {
 }
 
 class _TimelineState extends State<Timeline> {
-  bool _scrollEnabled = true;
-
-  void _lockScroll() {
-    if (!_scrollEnabled) return;
-    setState(() => _scrollEnabled = false);
-  }
-
-  void _unlockScroll() {
-    if (_scrollEnabled) return;
-    setState(() => _scrollEnabled = true);
-  }
-
   @override
   Widget build(BuildContext context) {
     final totalHeight = 24 * widget.hourHeight;
@@ -54,9 +42,6 @@ class _TimelineState extends State<Timeline> {
       child: Container(
         color: Theme.of(context).colorScheme.surface,
         child: SingleChildScrollView(
-          physics: _scrollEnabled
-              ? const BouncingScrollPhysics()
-              : const NeverScrollableScrollPhysics(),
           child: SizedBox(
             height: totalHeight,
             child: Stack(
@@ -82,13 +67,9 @@ class _TimelineState extends State<Timeline> {
                     task: t,
                     hourHeight: widget.hourHeight,
                     gridLineOffset: widget.gridLineOffset,
-                    timeStepMinutes: timeStepMinutes,
-                    minTaskMinutes: minTaskMinutes,
+
                     onToggleComplete: widget.onToggleComplete,
                     onEdit: widget.onEdit,
-                    onResizeCommit: widget.onResizeCommit,
-                    onResizeStart: _lockScroll,
-                    onResizeEnd: _unlockScroll,
                   ),
 
                 if (isSameDay(widget.now, widget.day))

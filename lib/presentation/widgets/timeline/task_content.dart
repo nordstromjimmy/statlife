@@ -75,8 +75,22 @@ class _TaskContentState extends State<TaskContent>
     final showDetails = durationMin >= 90;
 
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
+        // Task Content
+        Expanded(
+          child: Opacity(
+            opacity: widget.task.isCompleted ? 0.5 : 1.0,
+            child: showDetails
+                ? _buildDetailedContent(context)
+                : _buildCompactContent(context),
+          ),
+        ),
+
         // Animated Checkbox
+        Text("Mark complete"),
+        const SizedBox(width: 12),
+
         AnimatedBuilder(
           animation: _scaleAnimation,
           builder: (context, child) {
@@ -115,18 +129,6 @@ class _TaskContentState extends State<TaskContent>
             );
           },
         ),
-
-        const SizedBox(width: 12),
-
-        // Task Content
-        Expanded(
-          child: Opacity(
-            opacity: widget.task.isCompleted ? 0.5 : 1.0,
-            child: showDetails
-                ? _buildDetailedContent(context)
-                : _buildCompactContent(context),
-          ),
-        ),
       ],
     );
   }
@@ -134,6 +136,7 @@ class _TaskContentState extends State<TaskContent>
   Widget _buildCompactContent(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
         Flexible(
           child: Text(
@@ -166,7 +169,6 @@ class _TaskContentState extends State<TaskContent>
   Widget _buildDetailedContent(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           widget.task.title,

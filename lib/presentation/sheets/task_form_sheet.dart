@@ -52,10 +52,29 @@ class _TaskFormSheetState extends ConsumerState<_TaskFormSheet> {
       // Edit mode: populate from existing task
       final task = widget.existingTask!;
       _titleController = TextEditingController(text: task.title);
-      _start =
-          task.startAt ??
-          DateTime(widget.day.year, widget.day.month, widget.day.day, 0, 0);
-      _end = task.endAt ?? _start.add(const Duration(minutes: minTaskMinutes));
+
+      // Ensure start and end are on the correct day (widget.day)
+      final taskStart = task.startAt ?? task.day;
+      final taskEnd =
+          task.endAt ?? taskStart.add(const Duration(minutes: minTaskMinutes));
+
+      // Reconstruct times on widget.day (in case task is from a different day)
+      _start = DateTime(
+        widget.day.year,
+        widget.day.month,
+        widget.day.day,
+        taskStart.hour,
+        taskStart.minute,
+      );
+
+      _end = DateTime(
+        widget.day.year,
+        widget.day.month,
+        widget.day.day,
+        taskEnd.hour,
+        taskEnd.minute,
+      );
+
       _xp = task.xp;
     } else {
       // Add mode: initialize with defaults
@@ -116,12 +135,16 @@ class _TaskFormSheetState extends ConsumerState<_TaskFormSheet> {
     setState(() {
       if (isStart) {
         _start = snapped;
-        if (!_end.isAfter(_start)) {
+        // Only adjust end if duration becomes too short
+        final duration = _end.difference(_start).inMinutes;
+        if (duration < minTaskMinutes) {
           _end = _start.add(const Duration(minutes: minTaskMinutes));
         }
       } else {
         _end = snapped;
-        if (!_end.isAfter(_start)) {
+        // Only adjust end if duration becomes too short
+        final duration = _end.difference(_start).inMinutes;
+        if (duration < minTaskMinutes) {
           _end = _start.add(const Duration(minutes: minTaskMinutes));
         }
       }

@@ -60,7 +60,7 @@ class _XpDisplayState extends State<XpDisplay> {
         widget.profile.totalXp - levelInfo.xpIntoLevel + levelInfo.xpForNext;
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+      padding: const EdgeInsets.fromLTRB(6, 6, 6, 6),
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
         border: Border(

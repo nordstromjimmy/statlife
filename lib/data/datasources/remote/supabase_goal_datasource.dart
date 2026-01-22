@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../domain/models/goal.dart';
 
@@ -18,8 +19,6 @@ class SupabaseGoalDatasource {
           .eq('user_id', userId)
           .order('created_at', ascending: false);
 
-      print('📦 Raw Supabase goals response: $response');
-
       final goals = <Goal>[];
       for (var i = 0; i < (response as List).length; i++) {
         try {
@@ -31,13 +30,26 @@ class SupabaseGoalDatasource {
 
           final goal = Goal.fromJson(cleanJson);
           goals.add(goal);
-        } catch (e) {
-          print('❌ Error parsing goal at index $i: $e');
+        } catch (e, stackTrace) {
+          // Skip corrupted items but log in debug mode
+          if (kDebugMode) {
+            debugPrint('⚠️ Skipped corrupted goal at index $i: $e');
+            debugPrint('Stack trace: $stackTrace');
+          }
+          // TODO: Add error tracking service here
+          // errorTracker.recordError(e, stackTrace, reason: 'Failed to parse goal');
+          continue;
         }
       }
 
       return goals;
-    } catch (e) {
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('❌ Error fetching goals: $e');
+        debugPrint('Stack trace: $stackTrace');
+      }
+      // TODO: Add error tracking service here
+      // errorTracker.recordError(e, stackTrace, reason: 'Failed to fetch goals');
       return [];
     }
   }

@@ -104,7 +104,7 @@ class _XpGainAnimationState extends State<XpGainAnimation>
                     BoxShadow(
                       color: Theme.of(
                         context,
-                      ).colorScheme.primary.withOpacity(0.4),
+                      ).colorScheme.primary.withValues(alpha: 0.4),
                       blurRadius: 8,
                       spreadRadius: 2,
                     ),

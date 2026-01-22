@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../domain/models/profile.dart';
 
@@ -68,16 +69,19 @@ class SupabaseProfileDatasource {
   /// Update just the name field
   Future<void> updateName(String userId, String? name) async {
     try {
-      final result = await _client
+      await _client
           .from('profiles')
           .update({
             'name': name,
             'updated_at': DateTime.now().toIso8601String(),
           })
-          .eq('id', userId)
-          .select();
-    } catch (_) {
-      //
+          .eq('id', userId);
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('❌ Error updating profile name: $e');
+        debugPrint('❌ StackTrace: $stackTrace');
+      }
+      // TODO: Add error tracking service here
       rethrow;
     }
   }
