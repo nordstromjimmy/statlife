@@ -37,8 +37,8 @@ class TaskBlock extends StatelessWidget {
     const rightPadding = 1.0;
 
     final bg = task.isCompleted
-        ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.6)
-        : Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.4);
+        ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.1)
+        : Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.2);
 
     return Positioned(
       top: top + 2,

@@ -88,7 +88,15 @@ class _TaskContentState extends State<TaskContent>
         ),
 
         // Animated Checkbox
-        Text("Mark complete"),
+        Text(
+          "Mark complete",
+          style: TextStyle(
+            color: widget.task.isCompleted
+                ? Colors.white.withValues(alpha: 0.3)
+                : Colors.white,
+            fontSize: 13,
+          ),
+        ),
         const SizedBox(width: 12),
 
         AnimatedBuilder(
@@ -107,8 +115,8 @@ class _TaskContentState extends State<TaskContent>
                   widget.onToggleComplete(newValue);
                 },
                 child: Container(
-                  width: 24,
-                  height: 24,
+                  width: 22,
+                  height: 22,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(

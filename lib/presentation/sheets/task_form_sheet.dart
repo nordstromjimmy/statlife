@@ -42,6 +42,8 @@ class _TaskFormSheetState extends ConsumerState<_TaskFormSheet> {
   late int _xp;
   Goal? _selectedGoal;
 
+  bool _validate = false;
+
   bool get _isEditMode => widget.existingTask != null;
 
   @override
@@ -153,8 +155,16 @@ class _TaskFormSheetState extends ConsumerState<_TaskFormSheet> {
 
   Future<void> _handleSave() async {
     final title = _titleController.text.trim();
-    if (title.isEmpty) return;
+    if (title.isEmpty) {
+      setState(() {
+        _validate = true;
+      });
+      return;
+    }
 
+    setState(() {
+      _validate = false;
+    });
     final now = DateTime.now();
     final task = _isEditMode
         ? widget.existingTask!.copyWith(
@@ -232,9 +242,18 @@ class _TaskFormSheetState extends ConsumerState<_TaskFormSheet> {
           // Title field
           TextField(
             controller: _titleController,
-            decoration: const InputDecoration(
+            onChanged: (value) {
+              // Clear error when user types
+              if (_validate && value.trim().isNotEmpty) {
+                setState(() {
+                  _validate = false;
+                });
+              }
+            },
+            decoration: InputDecoration(
               labelText: 'Task title',
               hintText: 'e.g. Gym',
+              errorText: _validate ? 'Title cannot be empty' : null,
             ),
           ),
           const SizedBox(height: 12),

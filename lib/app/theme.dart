@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  // Background Colors (matching landing page)
+  // Background Colors (keeping dark slate for contrast)
   static const _slate950 = Color(0xFF020617); // Main background
   static const _slate900 = Color(0xFF0f172a); // Card backgrounds
   static const _slate800 = Color(0xFF1e293b); // Borders, elevated surfaces
@@ -11,28 +11,31 @@ class AppTheme {
   static const _slate400 = Color(0xFF94a3b8); // Body text
   static const _slate500 = Color(0xFF64748b); // Muted text
 
-  // Accent Colors (Gradient Trio)
-  static const _cyan400 = Color(0xFF22d3ee); // Primary accent (XP, Calendar)
-  static const _cyan500 = Color(0xFF06b6d4);
-  static const _cyan600 = Color(0xFF0891b2);
-  static const _purple400 = Color(0xFFc084fc); // Secondary accent
-  static const _purple600 = Color(0xFF9333ea);
-  static const _pink400 = Color(0xFFf472b6); // Goal tracking
-  static const _yellow400 = Color(0xFFfacc15); // Achievements
+  // Brand Colors from Logo (blue/cyan focused)
+  static const _brandOrange = Color(
+    0xFFFF6B35,
+  ); // "evo" orange - for special accents
+  static const _brandPurple = Color(0xFFAB47BC); // "v" purple - secondary
+  static const _brandBlue = Color(0xFF42A5F5); // "em" blue - main accent
+  static const _brandCyan = Color(0xFF26C6DA); // cyan - primary accent
 
-  // Orange for buttons (NEW)
-  static const _orange500 = Color(0xFFff6532);
+  // Lighter variants for containers
+  static const _orangeLight = Color(0xFFFF8A65);
+  static const _purpleLight = Color(0xFFCE93D8);
+  static const _blueLight = Color(0xFF64B5F6);
+  static const _cyanLight = Color(0xFF4DD0E1);
 
   static ThemeData dark() {
     final base = ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
       colorScheme: ColorScheme.dark(
-        primary: _cyan400,
-        secondary: _cyan600,
-        tertiary: _pink400,
+        primary: _brandCyan, // Main accent - cyan
+        secondary: _brandBlue, // Secondary accent - blue
+        tertiary: _orangeLight, // Tertiary accent - purple
         surface: _slate900,
-        primaryContainer: _cyan600,
+        primaryContainer: _brandCyan.withValues(alpha: 0.3),
+        secondaryContainer: _brandBlue.withValues(alpha: 0.3),
         surfaceContainerHighest: _slate800,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
@@ -127,7 +130,7 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: _cyan400, width: 2),
+          borderSide: const BorderSide(color: _brandCyan, width: 2),
         ),
         labelStyle: const TextStyle(color: _slate400),
         hintStyle: const TextStyle(color: _slate500),
@@ -136,7 +139,7 @@ class AppTheme {
       // Buttons
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: _orange500,
+          backgroundColor: _brandOrange,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           shape: RoundedRectangleBorder(
@@ -148,7 +151,7 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: _slate900,
-          foregroundColor: _cyan400,
+          foregroundColor: _brandCyan,
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           shape: RoundedRectangleBorder(
@@ -160,9 +163,9 @@ class AppTheme {
 
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: _cyan400,
+          foregroundColor: _brandCyan,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          side: const BorderSide(color: _cyan400),
+          side: const BorderSide(color: _brandCyan),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -171,7 +174,7 @@ class AppTheme {
 
       // FloatingActionButton
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: _cyan400,
+        backgroundColor: _brandOrange,
         foregroundColor: Colors.white,
       ),
 
@@ -195,16 +198,16 @@ class AppTheme {
       // Navigation Bar
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: _slate950,
-        indicatorColor: _cyan400.withValues(alpha: 0.2),
+        indicatorColor: _brandCyan.withValues(alpha: 0.2),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return const TextStyle(color: _cyan400, fontSize: 12);
+            return const TextStyle(color: _brandCyan, fontSize: 12);
           }
           return const TextStyle(color: _slate500, fontSize: 12);
         }),
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return const IconThemeData(color: _cyan400);
+            return const IconThemeData(color: _brandCyan);
           }
           return const IconThemeData(color: _slate500);
         }),
@@ -214,7 +217,7 @@ class AppTheme {
       checkboxTheme: CheckboxThemeData(
         fillColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return _cyan400;
+            return _brandCyan;
           }
           return _slate800;
         }),
@@ -222,28 +225,35 @@ class AppTheme {
       ),
 
       // Progress Indicators
-      progressIndicatorTheme: const ProgressIndicatorThemeData(color: _cyan400),
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: _brandCyan,
+      ),
     );
   }
 
   // Custom gradient colors for special UI elements
-  static const List<Color> xpGradient = [_cyan500, _cyan400];
-  static const List<Color> levelGradient = [_cyan400, _purple400];
-  static const List<Color> goalGradient = [_pink400, _purple400];
-  static const List<Color> achievementGradient = [
-    _yellow400,
-    Color(0xFFca8a04),
+  static const List<Color> xpGradient = [_brandCyan, _brandBlue];
+  static const List<Color> levelGradient = [_brandBlue, _brandPurple];
+  static const List<Color> goalGradient = [_brandPurple, _brandBlue];
+  static const List<Color> achievementGradient = [_brandOrange, _cyanLight];
+  static const List<Color> ctaGradient = [_brandBlue, _brandCyan];
+
+  // Full brand gradient (logo-inspired, blue focused)
+  static const List<Color> brandGradient = [
+    _brandOrange, // warm start
+    _brandPurple, // middle
+    _brandBlue, // cool
+    _brandCyan, // coolest
   ];
-  static const List<Color> ctaGradient = [_purple600, _cyan600];
 
   // Semantic colors
   static const success = Color(0xFF4ade80);
   static const error = Color(0xFFf87171);
-  static const warning = _yellow400;
+  static const warning = Color(0xFFfbbf24);
 
   // Direct color access
-  static const cyan = _cyan400;
-  static const purple = _purple400;
-  static const pink = _pink400;
-  static const yellow = _yellow400;
+  static const orange = _brandOrange;
+  static const purple = _brandPurple;
+  static const blue = _brandBlue;
+  static const cyan = _brandCyan;
 }
