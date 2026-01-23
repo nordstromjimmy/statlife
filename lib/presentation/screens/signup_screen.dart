@@ -59,7 +59,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Create Account'), centerTitle: true),
+      appBar: AppBar(
+        title: const Text('Create Account'),
+        centerTitle: true,
+        forceMaterialTransparency: true,
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),

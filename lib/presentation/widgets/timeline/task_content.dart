@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/utils/time_utils.dart';
 import '../../../domain/models/task.dart';
 
 class TaskContent extends StatefulWidget {
@@ -160,7 +161,7 @@ class _TaskContentState extends State<TaskContent>
         ),
         const SizedBox(width: 12),
         Text(
-          '${_fmtTime(widget.start)} – ${_fmtTime(widget.end)} · ${widget.task.xp} XP',
+          '${fmtTime(widget.start)} – ${fmtTime(widget.end)} · ${widget.task.xp} XP',
           maxLines: 1,
           overflow: TextOverflow.clip,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -190,7 +191,7 @@ class _TaskContentState extends State<TaskContent>
         ),
         const SizedBox(height: 1),
         Text(
-          '${_fmtTime(widget.start)} – ${_fmtTime(widget.end)} · ${widget.task.xp} XP',
+          '${fmtTime(widget.start)} – ${fmtTime(widget.end)} · ${widget.task.xp} XP',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -202,11 +203,5 @@ class _TaskContentState extends State<TaskContent>
         ),
       ],
     );
-  }
-
-  static String _fmtTime(DateTime dt) {
-    final hh = dt.hour.toString().padLeft(2, '0');
-    final mm = dt.minute.toString().padLeft(2, '0');
-    return '$hh:$mm';
   }
 }

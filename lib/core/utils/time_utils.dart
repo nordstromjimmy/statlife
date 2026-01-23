@@ -30,3 +30,9 @@ bool isToday(DateTime day) {
   final now = DateTime.now();
   return day.year == now.year && day.month == now.month && day.day == now.day;
 }
+
+String fmtTime(DateTime dt) {
+  final hh = dt.hour.toString().padLeft(2, '0');
+  final mm = dt.minute.toString().padLeft(2, '0');
+  return '$hh:$mm';
+}

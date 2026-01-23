@@ -30,6 +30,8 @@ class _GoalFormSheetState extends ConsumerState<_GoalFormSheet> {
   late final TextEditingController _titleController;
   late int _minutes;
 
+  bool _validate = false;
+
   bool get _isEditMode => widget.existingGoal != null;
 
   @override
@@ -71,7 +73,16 @@ class _GoalFormSheetState extends ConsumerState<_GoalFormSheet> {
 
   Future<void> _handleSave() async {
     final title = _titleController.text.trim();
-    if (title.isEmpty) return;
+    if (title.isEmpty) {
+      setState(() {
+        _validate = true;
+      });
+      return;
+    }
+
+    setState(() {
+      _validate = false;
+    });
 
     if (_isEditMode) {
       final updated = widget.existingGoal!.copyWith(
@@ -137,9 +148,17 @@ class _GoalFormSheetState extends ConsumerState<_GoalFormSheet> {
           // Title field
           TextField(
             controller: _titleController,
+            onChanged: (value) {
+              if (_validate && value.trim().isNotEmpty) {
+                setState(() {
+                  _validate = false;
+                });
+              }
+            },
             decoration: InputDecoration(
               labelText: 'Goal title',
               hintText: _isEditMode ? null : 'e.g. Read this book',
+              errorText: _validate ? 'Title cannot be empty' : null,
             ),
           ),
           const SizedBox(height: 12),

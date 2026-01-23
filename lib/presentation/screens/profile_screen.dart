@@ -19,7 +19,11 @@ class ProfileScreen extends ConsumerWidget {
     final authAsync = ref.watch(authControllerProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile'), centerTitle: true),
+      appBar: AppBar(
+        title: const Text('Profile'),
+        centerTitle: true,
+        forceMaterialTransparency: true,
+      ),
       body: profileAsync.when(
         data: (profile) {
           final levelInfo = computeLevelFromTotalXp(profile.totalXp);

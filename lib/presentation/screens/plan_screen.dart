@@ -47,7 +47,11 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
     final anchorDay = DateTime(anchor.year, anchor.month, anchor.day);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Plan'), centerTitle: true),
+      appBar: AppBar(
+        title: const Text('Plan'),
+        centerTitle: true,
+        forceMaterialTransparency: true,
+      ),
       body: Column(
         children: [
           // ✅ Header below AppBar (same style as before)

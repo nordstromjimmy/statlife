@@ -85,6 +85,7 @@ class _DayScreenState extends ConsumerState<DayScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        forceMaterialTransparency: true,
         title: Row(
           children: [
             Expanded(

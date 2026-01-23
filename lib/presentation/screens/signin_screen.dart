@@ -56,7 +56,11 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Sign In'), centerTitle: true),
+      appBar: AppBar(
+        title: const Text('Sign In'),
+        centerTitle: true,
+        forceMaterialTransparency: true,
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
