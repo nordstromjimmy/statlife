@@ -81,7 +81,7 @@ class _TaskFormSheetState extends ConsumerState<_TaskFormSheet> {
     } else {
       // Add mode: initialize with defaults
       _titleController = TextEditingController();
-      _xp = XpGenerator.random(min: 50, max: 100);
+      _xp = XpGenerator.random();
 
       final now = DateTime.now();
       final rounded = roundToStep(

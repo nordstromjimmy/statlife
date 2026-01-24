@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 import '../../data/repositories/task_repository.dart';
 import '../../domain/models/task.dart';
 import '../providers.dart';
@@ -13,17 +14,8 @@ class TaskController extends AsyncNotifier<List<Task>> {
     ref.watch(isAuthenticatedProvider);
     ref.watch(currentUserIdProvider);
 
-    print('🏗️ TaskController.build() called');
-
-    final repo = ref.read(taskRepositoryProvider);
-    print('   repo.isAuthenticated: ${repo.isAuthenticated}');
-    print('   repo.userId: ${repo.userId}');
-
     final all = await _fetchAndSort();
-    print('✅ TaskController loaded ${all.length} tasks');
-    if (all.isNotEmpty) {
-      print('   First task: ${all.first.title}');
-    }
+
     return all;
   }
 
@@ -31,7 +23,6 @@ class TaskController extends AsyncNotifier<List<Task>> {
 
   Future<List<Task>> _fetchAndSort() async {
     final all = await _repo.getAll();
-    print('📥 Fetched ${all.length} tasks from repository');
     all.sort((a, b) {
       final d = a.day.compareTo(b.day);
       if (d != 0) return d;
@@ -56,6 +47,44 @@ class TaskController extends AsyncNotifier<List<Task>> {
     await _repo.delete(id);
 
     // Then refetch to ensure consistency
+    final updated = await _fetchAndSort();
+    state = AsyncData(updated);
+  }
+
+  /// Copy tasks to multiple days
+  /// Creates new tasks with new IDs and dates, preserving all other properties
+  Future<void> copyTasksToDays(
+    List<Task> sourceTasks,
+    List<DateTime> targetDays,
+  ) async {
+    final now = DateTime.now();
+
+    for (final targetDay in targetDays) {
+      for (final sourceTask in sourceTasks) {
+        // Calculate time difference between source day and target day
+        final daysDiff = targetDay.difference(sourceTask.day).inDays;
+
+        // Create new task with updated day and times
+        final newTask = sourceTask.copyWith(
+          id: const Uuid().v4(), // New unique ID
+          day: targetDay,
+          // Shift start/end times by the same number of days
+          startAt: sourceTask.startAt?.add(Duration(days: daysDiff)),
+          endAt: sourceTask.endAt?.add(Duration(days: daysDiff)),
+          // Reset completion status
+          completedAt: null,
+          firstCompletedAt: null,
+          // Update timestamps
+          createdAt: now,
+          updatedAt: now,
+        );
+
+        // Save the new task
+        await _repo.upsert(newTask);
+      }
+    }
+
+    // Refetch to update UI
     final updated = await _fetchAndSort();
     state = AsyncData(updated);
   }
