@@ -255,6 +255,7 @@ class _TaskFormSheetState extends ConsumerState<_TaskFormSheet> {
               hintText: 'e.g. Gym',
               errorText: _validate ? 'Title cannot be empty' : null,
             ),
+            style: TextStyle(color: Colors.white),
           ),
           const SizedBox(height: 12),
 

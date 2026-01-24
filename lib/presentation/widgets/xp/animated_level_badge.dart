@@ -163,7 +163,7 @@ class AnimatedLevelBadgeState extends State<AnimatedLevelBadge>
                       style: TextStyle(
                         fontSize: widget.size * 0.4,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: Color(0xFF020617),
                       ),
                     ),
                   ),
