@@ -35,7 +35,7 @@ class HomeShell extends StatelessWidget {
     return Scaffold(
       body: child,
       bottomNavigationBar: NavigationBar(
-        backgroundColor: Color(0xFF060B1A),
+        backgroundColor: Color(0xFF020617),
         selectedIndex: currentIndex,
         onDestinationSelected: (i) => _onTap(context, i),
         destinations: const [

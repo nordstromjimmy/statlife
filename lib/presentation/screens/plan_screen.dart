@@ -54,7 +54,6 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
       ),
       body: Column(
         children: [
-          // ✅ Header below AppBar (same style as before)
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: Row(
@@ -89,7 +88,7 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
             ),
           ),
 
-          // ✅ Swipe area
+          // Swipe area
           Expanded(
             child: PageView(
               controller: _pageController,
@@ -150,7 +149,7 @@ class _PlanScreenState extends ConsumerState<PlanScreen> {
                       child: goals.isEmpty
                           ? Center(
                               child: Text(
-                                'No goals yet.\nAdd one to create tasks faster.',
+                                'No goals yet.\nAdd something you wish to start doing more regularly',
                                 textAlign: TextAlign.center,
                                 style: Theme.of(context).textTheme.bodyMedium
                                     ?.copyWith(color: Colors.white70),

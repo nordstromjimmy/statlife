@@ -32,7 +32,8 @@ class AppTheme {
       colorScheme: ColorScheme.dark(
         primary: _brandCyan, // Main accent - cyan
         secondary: _brandBlue, // Secondary accent - blue
-        tertiary: _orangeLight, // Tertiary accent - purple
+        tertiary: _brandOrange, // Tertiary accent - purple
+        onTertiary: _brandOrange,
         surface: _slate900,
         primaryContainer: _brandCyan.withValues(alpha: 0.3),
         secondaryContainer: _brandBlue.withValues(alpha: 0.3),

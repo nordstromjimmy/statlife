@@ -146,20 +146,12 @@ class AnimatedLevelBadgeState extends State<AnimatedLevelBadge>
                   height: widget.size,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      colors: [
-                        Theme.of(context).colorScheme.primary,
-                        Theme.of(context).colorScheme.tertiary,
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                    color: Theme.of(context).colorScheme.tertiary,
                     boxShadow: [
                       BoxShadow(
-                        color: Theme.of(context).colorScheme.primary
-                            .withOpacity(
-                              _isLevelingUp ? _glowAnimation.value : 0.3,
-                            ),
+                        color: Theme.of(context).colorScheme.primary.withValues(
+                          alpha: _isLevelingUp ? _glowAnimation.value : 0.3,
+                        ),
                         blurRadius: _isLevelingUp ? 20 : 8,
                         spreadRadius: _isLevelingUp ? 4 : 1,
                       ),
@@ -188,8 +180,9 @@ class AnimatedLevelBadgeState extends State<AnimatedLevelBadge>
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: Theme.of(context).colorScheme.primary
-                            .withOpacity(1.0 - _particleController.value),
+                        color: Theme.of(context).colorScheme.primary.withValues(
+                          alpha: 1.0 - _particleController.value,
+                        ),
                         width: 2,
                       ),
                     ),
@@ -217,7 +210,7 @@ class _LevelUpParticlePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = color.withOpacity(1.0 - progress)
+      ..color = color.withValues(alpha: 1.0 - progress)
       ..style = PaintingStyle.fill;
 
     final center = Offset(size.width / 2, size.height / 2);

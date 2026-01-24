@@ -52,11 +52,7 @@ class TaskBlock extends StatelessWidget {
           decoration: BoxDecoration(
             color: bg,
             borderRadius: BorderRadius.circular(2),
-            border: Border.all(
-              color: Theme.of(
-                context,
-              ).colorScheme.primary.withValues(alpha: 0.25),
-            ),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
           ),
           child: TaskContent(
             task: task,

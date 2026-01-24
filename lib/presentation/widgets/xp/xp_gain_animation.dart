@@ -93,12 +93,7 @@ class _XpGainAnimationState extends State<XpGainAnimation>
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Theme.of(context).colorScheme.primary,
-                      Theme.of(context).colorScheme.tertiary,
-                    ],
-                  ),
+                  color: Theme.of(context).colorScheme.tertiary,
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(

@@ -87,10 +87,10 @@ class _TaskContentState extends State<TaskContent>
                 : _buildCompactContent(context),
           ),
         ),
-
+        const SizedBox(width: 6),
         // Animated Checkbox
         Text(
-          "Mark complete",
+          "Mark complete:",
           style: TextStyle(
             color: widget.task.isCompleted
                 ? Colors.white.withValues(alpha: 0.3)
@@ -98,7 +98,7 @@ class _TaskContentState extends State<TaskContent>
             fontSize: 13,
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 8),
 
         AnimatedBuilder(
           animation: _scaleAnimation,
@@ -122,7 +122,7 @@ class _TaskContentState extends State<TaskContent>
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(
                       color: widget.task.isCompleted
-                          ? Colors.black
+                          ? Colors.white.withValues(alpha: 0.01)
                           : Colors.white.withValues(alpha: 0.3),
                       width: 2,
                     ),
@@ -178,6 +178,7 @@ class _TaskContentState extends State<TaskContent>
   Widget _buildDetailedContent(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
         Text(
           widget.task.title,

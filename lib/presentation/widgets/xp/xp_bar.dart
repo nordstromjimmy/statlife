@@ -226,12 +226,11 @@ class XpBarState extends State<XpBar> with TickerProviderStateMixin {
                             gradient: LinearGradient(
                               colors: _isLevelingUp
                                   ? [
-                                      Theme.of(context).colorScheme.primary,
-                                      Theme.of(context).colorScheme.secondary,
+                                      Theme.of(context).colorScheme.onTertiary,
                                       Theme.of(context).colorScheme.tertiary,
                                     ]
                                   : [
-                                      Theme.of(context).colorScheme.primary,
+                                      Theme.of(context).colorScheme.onTertiary,
                                       Theme.of(context).colorScheme.tertiary,
                                     ],
                               begin: Alignment.centerLeft,
