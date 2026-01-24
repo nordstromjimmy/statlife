@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../application/auth/auth_controller.dart';
+import '../../application/goals/goal_controller.dart';
 import '../../application/profile/profile_controller.dart';
+import '../../application/providers.dart';
 import '../../application/tasks/task_controller.dart';
 import '../../domain/logic/leveling.dart';
 import '../../domain/models/auth_state.dart';
@@ -11,6 +13,9 @@ import '../widgets/xp/xp_bar.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
+
+  bool _isGuest(AuthState? auth) => auth == null || auth.isGuest;
+  bool _isAuthenticated(AuthState? auth) => auth?.isAuthenticated ?? false;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -42,15 +47,13 @@ class ProfileScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Guest CTA Banner
-                if (auth?.isGuest ?? true) _buildGuestBanner(context),
-
-                if (auth?.isGuest ?? true) const SizedBox(height: 24),
+                if (_isGuest(auth)) _buildGuestBanner(context),
+                if (_isGuest(auth)) const SizedBox(height: 24),
 
                 // Name Section (for authenticated users)
-                if (auth?.isAuthenticated ?? false)
+                if (_isAuthenticated(auth))
                   _buildNameSection(context, ref, profile),
-
-                if (auth?.isAuthenticated ?? false) const SizedBox(height: 24),
+                if (_isAuthenticated(auth)) const SizedBox(height: 24),
 
                 // Level Card
                 _buildLevelCard(context, profile, levelInfo),
@@ -69,12 +72,12 @@ class ProfileScreen extends ConsumerWidget {
                 const SizedBox(height: 24),
 
                 // Additional Info Section
-                _buildInfoSection(context, profile),
+                _buildInfoSection(context, ref, profile, auth),
 
                 const SizedBox(height: 24),
 
                 // Sign Out Button (only show if authenticated)
-                if (auth?.isAuthenticated ?? false)
+                if (_isAuthenticated(auth))
                   SizedBox(
                     width: double.infinity,
                     height: 56,
@@ -304,17 +307,17 @@ class ProfileScreen extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    '${profile.level}',
-                    style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  Text(
                     'LEVEL',
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       color: Colors.white70,
                       letterSpacing: 1.2,
+                    ),
+                  ),
+                  Text(
+                    '${profile.level}',
+                    style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
                 ],
@@ -472,7 +475,7 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildInfoSection(BuildContext context, profile) {
+  Widget _buildInfoSection(BuildContext context, WidgetRef ref, profile, auth) {
     final createdDate = profile.createdAt;
     final daysSince = DateTime.now().difference(createdDate).inDays;
 
@@ -499,8 +502,97 @@ class ProfileScreen extends ConsumerWidget {
           label: 'Days active',
           value: '$daysSince ${daysSince == 1 ? 'day' : 'days'}',
         ),
+
+        // Clear Data button (only for guests)
+        if (_isGuest(auth)) ...[
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            height: 56,
+            child: OutlinedButton.icon(
+              onPressed: () => _showClearDataDialog(context, ref),
+              icon: const Icon(Icons.delete_sweep),
+              label: const Text('Clear All Data'),
+              style: OutlinedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                side: BorderSide(color: Colors.orange.withValues(alpha: 0.5)),
+                foregroundColor: Colors.orange,
+              ),
+            ),
+          ),
+        ],
       ],
     );
+  }
+
+  Future<void> _showClearDataDialog(BuildContext context, WidgetRef ref) async {
+    final shouldClear = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear All Data?'),
+        content: const Text(
+          'This will permanently delete all your tasks, goals, and progress. This action cannot be undone.\n\n'
+          '💡 Tip: Create an account to save your progress in the cloud! '
+          'When you sign up, you\'ll be able to transfer this data to your new account.',
+        ),
+        actions: [
+          Row(
+            children: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              const Spacer(),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                child: const Text('Clear All Data'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    if (shouldClear == true && context.mounted) {
+      await _clearAllLocalData(ref);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('All data cleared successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _clearAllLocalData(WidgetRef ref) async {
+    // Clear tasks
+    final taskController = ref.read(taskControllerProvider.notifier);
+    final tasks = ref.read(taskControllerProvider).value ?? [];
+    for (final task in tasks) {
+      await taskController.delete(task.id);
+    }
+
+    // Clear goals
+    final goalController = ref.read(goalControllerProvider.notifier);
+    final goals = ref.read(goalControllerProvider).value ?? [];
+    for (final goal in goals) {
+      await goalController.delete(goal.id);
+    }
+
+    // Clear profile - use the repository directly
+    final localStore = ref.read(localStoreProvider);
+
+    // Clear the guest profile from local storage
+    await localStore.remove('profile'); // Remove guest_profile key
+
+    // Force the profile controller to rebuild with a fresh profile
+    ref.invalidate(profileControllerProvider);
   }
 
   Widget _buildInfoTile(

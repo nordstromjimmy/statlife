@@ -30,7 +30,7 @@ final isAuthenticatedProvider = Provider<bool>((ref) {
   // Watch auth controller to react to changes
   ref.watch(authControllerProvider);
 
-  // ✅ Get userId directly from Supabase (synchronous, always current)
+  // Get userId directly from Supabase (synchronous, always current)
   final user = Supabase.instance.client.auth.currentUser;
   return user != null;
 });
@@ -40,7 +40,7 @@ final currentUserIdProvider = Provider<String?>((ref) {
   // Watch auth controller to react to changes
   ref.watch(authControllerProvider);
 
-  // ✅ Get userId directly from Supabase (synchronous, always current)
+  // Get userId directly from Supabase (synchronous, always current)
   final user = Supabase.instance.client.auth.currentUser;
   final userId = user?.id;
 

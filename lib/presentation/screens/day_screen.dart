@@ -136,7 +136,7 @@ class _DayScreenState extends ConsumerState<DayScreen> {
 
       body: Column(
         children: [
-          // XP Bar Section (NEW)
+          // XP Bar Section
           profileAsync.when(
             data: (profile) {
               return XpDisplay(profile: profile, levelBadgeKey: _levelBadgeKey);

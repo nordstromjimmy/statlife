@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../core/constants/times.dart';
 import '../../../core/utils/time_utils.dart';
 import '../../../domain/models/task.dart';
 import 'current_time_line.dart';

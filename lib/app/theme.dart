@@ -199,16 +199,16 @@ class AppTheme {
       // Navigation Bar
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: _slate950,
-        indicatorColor: _brandCyan.withValues(alpha: 0.2),
+        indicatorColor: _brandCyan.withValues(alpha: 0.1),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return const TextStyle(color: _brandCyan, fontSize: 12);
+            return const TextStyle(color: Colors.white, fontSize: 12);
           }
           return const TextStyle(color: _slate500, fontSize: 12);
         }),
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return const IconThemeData(color: _brandCyan);
+            return const IconThemeData(color: Colors.white);
           }
           return const IconThemeData(color: _slate500);
         }),

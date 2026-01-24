@@ -41,10 +41,10 @@ class TaskBlock extends StatelessWidget {
         : Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.2);
 
     return Positioned(
-      top: top + 2,
+      top: top,
       left: left,
       right: rightPadding,
-      height: (height - 4).clamp(40.0, 9999.0),
+      height: (height).clamp(40.0, 9999.0),
       child: GestureDetector(
         onTap: () => onEdit(task),
         child: Container(

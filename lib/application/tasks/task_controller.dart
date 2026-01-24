@@ -9,11 +9,21 @@ final taskControllerProvider =
 class TaskController extends AsyncNotifier<List<Task>> {
   @override
   Future<List<Task>> build() async {
-    // ✅ Watch both auth state AND userId to rebuild when either changes
+    // Watch both auth state AND userId to rebuild when either changes
     ref.watch(isAuthenticatedProvider);
     ref.watch(currentUserIdProvider);
 
+    print('🏗️ TaskController.build() called');
+
+    final repo = ref.read(taskRepositoryProvider);
+    print('   repo.isAuthenticated: ${repo.isAuthenticated}');
+    print('   repo.userId: ${repo.userId}');
+
     final all = await _fetchAndSort();
+    print('✅ TaskController loaded ${all.length} tasks');
+    if (all.isNotEmpty) {
+      print('   First task: ${all.first.title}');
+    }
     return all;
   }
 
@@ -21,6 +31,7 @@ class TaskController extends AsyncNotifier<List<Task>> {
 
   Future<List<Task>> _fetchAndSort() async {
     final all = await _repo.getAll();
+    print('📥 Fetched ${all.length} tasks from repository');
     all.sort((a, b) {
       final d = a.day.compareTo(b.day);
       if (d != 0) return d;

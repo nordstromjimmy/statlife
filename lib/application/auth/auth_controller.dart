@@ -44,7 +44,44 @@ class AuthController extends AsyncNotifier<AuthState> {
     await _repo.saveAuthState(updated);
   }
 
-  /// Sign up with email/password
+  /// Returns the user ID but doesn't update state yet (for migration)
+  Future<String?> signUpWithoutStateUpdate({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final response = await _supabase.auth.signUp(
+        email: email,
+        password: password,
+      );
+
+      if (response.user != null) {
+        return response.user!.id;
+      }
+      return null;
+    } catch (e) {
+      state = AsyncError(e, StackTrace.current);
+      rethrow;
+    }
+  }
+
+  /// Update auth state after signup/migration is complete
+  Future<void> updateAuthState({
+    required String userId,
+    required String email,
+  }) async {
+    final newState = AuthState(
+      userType: UserType.authenticated,
+      userId: userId,
+      email: email,
+      hasSeenWelcome: true,
+    );
+
+    state = AsyncData(newState);
+    await _repo.saveAuthState(newState);
+  }
+
+  /// Original signUp method (for non-migration cases)
   Future<void> signUp({required String email, required String password}) async {
     try {
       final response = await _supabase.auth.signUp(
@@ -52,28 +89,28 @@ class AuthController extends AsyncNotifier<AuthState> {
         password: password,
       );
 
-      if (response.user == null) {
-        throw Exception('Sign up failed');
+      if (response.user != null) {
+        final userId = response.user!.id;
+
+        // Update auth state
+        final newState = AuthState(
+          userType: UserType.authenticated,
+          userId: userId,
+          email: email,
+          hasSeenWelcome: true,
+        );
+
+        state = AsyncData(newState);
+        await _repo.saveAuthState(newState);
       }
-
-      final updated = state.value!.copyWith(
-        userType: UserType.authenticated,
-        userId: response.user!.id,
-        email: email,
-        hasSeenWelcome: true,
-      );
-
-      state = AsyncData(updated);
-      await _repo.saveAuthState(updated);
-
-      // TODO: Migrate local data to Supabase here
-      // await _migrateGuestDataToCloud();
     } catch (e) {
+      state = AsyncError(e, StackTrace.current);
       rethrow;
     }
   }
 
   /// Sign in with email/password
+  /// Note: Migration should be handled in the UI before calling this
   Future<void> signIn({required String email, required String password}) async {
     try {
       final response = await _supabase.auth.signInWithPassword(
@@ -81,23 +118,22 @@ class AuthController extends AsyncNotifier<AuthState> {
         password: password,
       );
 
-      if (response.user == null) {
-        throw Exception('Sign in failed');
+      if (response.user != null) {
+        final userId = response.user!.id;
+
+        // Update auth state
+        final newState = AuthState(
+          userType: UserType.authenticated,
+          userId: userId,
+          email: email,
+          hasSeenWelcome: true,
+        );
+
+        state = AsyncData(newState);
+        await _repo.saveAuthState(newState);
       }
-
-      final updated = state.value!.copyWith(
-        userType: UserType.authenticated,
-        userId: response.user!.id,
-        email: email,
-        hasSeenWelcome: true,
-      );
-
-      state = AsyncData(updated);
-      await _repo.saveAuthState(updated);
-
-      // Sync data from cloud
-      // await _syncCloudData();
     } catch (e) {
+      state = AsyncError(e, StackTrace.current);
       rethrow;
     }
   }
@@ -114,33 +150,5 @@ class AuthController extends AsyncNotifier<AuthState> {
 
     state = AsyncData(updated);
     await _repo.saveAuthState(updated);
-  }
-
-  /// Upgrade from guest to authenticated
-  Future<void> upgradeAccount({
-    required String email,
-    required String password,
-  }) async {
-    if (!state.value!.isGuest) return;
-
-    try {
-      await signUp(email: email, password: password);
-
-      // Migrate guest data to Supabase
-      await _migrateGuestDataToCloud();
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  /// Migrate local guest data to Supabase
-  Future<void> _migrateGuestDataToCloud() async {
-    // TODO: Implement migration logic
-    // 1. Get all local tasks
-    // 2. Get all local goals
-    // 3. Upload to Supabase
-    // 4. Update local references with Supabase IDs
-
-    // This will be implemented when we wire up Supabase repositories
   }
 }

@@ -13,19 +13,29 @@ final profileControllerProvider =
 class ProfileController extends AsyncNotifier<Profile> {
   @override
   Future<Profile> build() async {
-    // ✅ Watch both auth state AND userId to rebuild when either changes
+    // Watch both auth state AND userId to rebuild when either changes
     ref.watch(isAuthenticatedProvider);
     final userId = ref.watch(currentUserIdProvider);
 
-    // ✅ Get fresh repository instance with current auth state
+    // Get fresh repository instance with current auth state
     final repo = ref.read(profileRepositoryProvider);
 
     final isAuthenticated = userId != null;
+
+    print('🏗️ ProfileController.build() called');
+    print('   isAuthenticated: $isAuthenticated');
+    print('   userId: $userId');
+    print('   repo.isAuthenticated: ${repo.isAuthenticated}');
+    print('   repo.userId: ${repo.userId}');
 
     // Try to get from repository (checks Supabase first if authenticated)
     final existing = await repo.get();
 
     if (existing != null) {
+      print('📋 ProfileController found existing profile:');
+      print('   ID: ${existing.id}');
+      print('   Level: ${existing.level}');
+      print('   XP: ${existing.totalXp}');
       // If authenticated and profile ID doesn't match user ID, it's stale - create fresh profile
       if (isAuthenticated && existing.id != userId) {
         final now = DateTime.now();

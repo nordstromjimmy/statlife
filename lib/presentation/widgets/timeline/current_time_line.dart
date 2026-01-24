@@ -32,8 +32,8 @@ class CurrentTimeLine extends StatelessWidget {
             const SizedBox(width: 60), // align with hour label column
             // dot
             Container(
-              width: 8,
-              height: 8,
+              width: 6,
+              height: 6,
               decoration: BoxDecoration(
                 color: dotColor,
                 shape: BoxShape.circle,

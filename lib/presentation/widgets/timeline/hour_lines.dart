@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 class HalfHourLine extends StatelessWidget {
-  const HalfHourLine({required this.top});
+  const HalfHourLine({super.key, required this.top});
   final double top;
 
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      left: 56,
+      left: 68,
       right: 0,
       top: top,
       child: Divider(
@@ -21,6 +21,7 @@ class HalfHourLine extends StatelessWidget {
 
 class HourLine extends StatelessWidget {
   const HourLine({
+    super.key,
     required this.hour,
     required this.top,
     required this.lineOffset,
@@ -38,7 +39,7 @@ class HourLine extends StatelessWidget {
       right: 0,
       top: top,
       child: SizedBox(
-        height: 22, // ✅ enough for text
+        height: 22, // enough for text
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
