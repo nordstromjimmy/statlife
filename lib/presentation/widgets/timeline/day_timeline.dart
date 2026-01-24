@@ -71,12 +71,11 @@ class _TimelineState extends State<Timeline> {
                     onEdit: widget.onEdit,
                   ),
 
-                if (isSameDay(widget.now, widget.day))
-                  CurrentTimeLine(
-                    now: widget.now,
-                    hourHeight: widget.hourHeight,
-                    gridLineOffset: widget.gridLineOffset,
-                  ),
+                CurrentTimeLine(
+                  now: widget.now,
+                  hourHeight: widget.hourHeight,
+                  gridLineOffset: widget.gridLineOffset,
+                ),
               ],
             ),
           ),

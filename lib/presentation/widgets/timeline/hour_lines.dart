@@ -51,7 +51,7 @@ class HourLine extends StatelessWidget {
                   label,
                   style: Theme.of(
                     context,
-                  ).textTheme.bodySmall?.copyWith(color: Colors.white60),
+                  ).textTheme.bodySmall?.copyWith(color: Colors.white),
                 ),
               ),
             ),
