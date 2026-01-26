@@ -8,26 +8,31 @@ class XpGenerator {
   /// Less common: 20-39 and 81-95 (25% chance)
   /// Rare: 10-19 and 96-100 (5% chance)
   static int random() {
-    final roll = _rng.nextDouble(); // 0.0 to 1.0
+    final roll = _rng.nextDouble();
 
     if (roll < 0.70) {
-      // 70% chance: Middle range (40-80)
-      return 40 + _rng.nextInt(41); // 40-80
+      // 70% chance: Middle range (20-40)
+      return 20 + _rng.nextInt(21); // 20-40
     } else if (roll < 0.95) {
-      // 25% chance: Lower-middle (20-39) or Upper-middle (81-95)
-      if (_rng.nextBool()) {
-        return 20 + _rng.nextInt(20); // 20-39
-      } else {
-        return 81 + _rng.nextInt(15); // 81-95
-      }
-    } else {
-      // 5% chance: Very low (10-19) or Jackpot (96-100)
+      // 25% chance: Lower-middle (10-19) or Upper-middle (41-48)
       if (_rng.nextBool()) {
         return 10 + _rng.nextInt(10); // 10-19
       } else {
-        return 96 + _rng.nextInt(5); // 96-100 (JACKPOT!)
+        return 41 + _rng.nextInt(8); // 41-48
+      }
+    } else {
+      // 5% chance: Very low (5-9) or Jackpot (49-50)
+      if (_rng.nextBool()) {
+        return 5 + _rng.nextInt(5); // 5-9
+      } else {
+        return 49 + _rng.nextInt(2); // 49-50 (JACKPOT!)
       }
     }
+  }
+
+  /// Legacy method for backward compatibility (faster leveling)
+  static int randomOld({int min = 50, int max = 100}) {
+    return min + _rng.nextInt(max - min + 1);
   }
 
   /// Generate XP based on task duration

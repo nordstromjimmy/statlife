@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../application/auth/auth_controller.dart';
+import '../presentation/screens/achievements_screen.dart';
 import '../presentation/screens/day_screen.dart';
 import '../presentation/screens/home_shell.dart';
 import '../presentation/screens/plan_screen.dart';
@@ -104,6 +105,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/profile',
             builder: (context, state) => const ProfileScreen(),
+          ),
+          GoRoute(
+            path: '/achievements',
+            builder: (context, state) => const AchievementsScreen(),
           ),
         ],
       ),

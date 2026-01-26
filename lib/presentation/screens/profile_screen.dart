@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../application/achievement/achievement_controller.dart';
 import '../../application/auth/auth_controller.dart';
 import '../../application/goals/goal_controller.dart';
 import '../../application/profile/profile_controller.dart';
 import '../../application/providers.dart';
 import '../../application/tasks/task_controller.dart';
 import '../../domain/logic/leveling.dart';
+import '../../domain/models/achievement.dart';
 import '../../domain/models/auth_state.dart';
 import '../../domain/models/task.dart';
 import '../widgets/xp/xp_bar.dart';
@@ -57,6 +59,10 @@ class ProfileScreen extends ConsumerWidget {
 
                 // Level Card
                 _buildLevelCard(context, profile, levelInfo),
+
+                const SizedBox(height: 24),
+
+                _buildAchievementsCard(context, ref, auth),
 
                 const SizedBox(height: 24),
 
@@ -469,6 +475,209 @@ class ProfileScreen extends ConsumerWidget {
             style: Theme.of(
               context,
             ).textTheme.bodySmall?.copyWith(color: Colors.white54),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Add this method to your ProfileScreen class:
+
+  Widget _buildAchievementsCard(
+    BuildContext context,
+    WidgetRef ref,
+    AuthState? auth,
+  ) {
+    // Watch achievements
+    final achievementsAsync = ref.watch(achievementControllerProvider);
+
+    return achievementsAsync.when(
+      data: (achievements) {
+        final unlocked = achievements.where((a) => a.isUnlocked).length;
+        final total = achievements.length;
+        final progress = unlocked / total;
+
+        return InkWell(
+          onTap: _isAuthenticated(auth)
+              ? () => context.push('/achievements')
+              : () => _showSignUpPrompt(context),
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
+                  Theme.of(
+                    context,
+                  ).colorScheme.secondary.withValues(alpha: 0.1),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: Theme.of(
+                  context,
+                ).colorScheme.primary.withValues(alpha: 0.3),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                Row(
+                  children: [
+                    Icon(
+                      Icons.emoji_events,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 28,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Achievements',
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          if (_isGuest(auth))
+                            Text(
+                              'Sign up to unlock',
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: Colors.white60),
+                            )
+                          else
+                            Text(
+                              '$unlocked of $total unlocked',
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: Colors.white70),
+                            ),
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      _isGuest(auth) ? Icons.lock : Icons.chevron_right,
+                      color: Colors.white60,
+                    ),
+                  ],
+                ),
+
+                if (_isAuthenticated(auth)) ...[
+                  const SizedBox(height: 16),
+
+                  // Progress Bar
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: LinearProgressIndicator(
+                      value: progress,
+                      minHeight: 8,
+                      backgroundColor: Colors.white.withValues(alpha: 0.2),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // Recent Unlocks Preview
+                  if (unlocked > 0) ...[
+                    Text(
+                      'Recent unlocks:',
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: Colors.white60),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: achievements
+                          .where((a) => a.isUnlocked)
+                          .take(3)
+                          .map((achievement) {
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: Tooltip(
+                                message: achievement.title,
+                                child: Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: Color(
+                                      achievement.tierColor,
+                                    ).withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Image.asset(
+                                    achievement.iconPath,
+                                    width: 24,
+                                    height: 24,
+                                    color: Color(achievement.tierColor),
+                                    errorBuilder: (_, __, ___) => Icon(
+                                      Icons.emoji_events,
+                                      size: 24,
+                                      color: Color(achievement.tierColor),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          })
+                          .toList(),
+                    ),
+                  ] else
+                    Text(
+                      'Complete tasks to unlock achievements!',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Colors.white60,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
+      loading: () => Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Center(child: CircularProgressIndicator()),
+      ),
+      error: (e, _) => const SizedBox.shrink(),
+    );
+  }
+
+  // Helper method for sign-up prompt
+  void _showSignUpPrompt(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Sign Up to Unlock'),
+        content: const Text(
+          'Create an account to track your achievements and unlock rewards as you complete tasks!',
+        ),
+        actions: [
+          Row(
+            children: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Maybe Later'),
+              ),
+              Spacer(),
+              FilledButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  context.push('/signup');
+                },
+                child: const Text('Sign Up'),
+              ),
+            ],
           ),
         ],
       ),

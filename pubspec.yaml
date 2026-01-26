@@ -58,6 +58,7 @@ dependencies:
   # Supabase (we’ll wire later)
   supabase_flutter: ^2.8.0
   uuid: ^4.5.2
+  flutter_launcher_icons: ^0.14.4
 
 dev_dependencies:
   flutter_test:
@@ -90,6 +91,10 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/logo.png
+    - assets/achievements/bronze.png
+    - assets/achievements/silver.png
+    - assets/achievements/gold.png
+    - assets/achievements/diamond.png
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
@@ -120,3 +125,19 @@ flutter:
 
 dependency_overrides:
   analyzer_plugin: ^0.13.4
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/app_icon.png"
+
+  # Optional: Different icons for platforms
+  # android: "launcher_icon"
+  # ios: true
+
+  # Optional: Adaptive icon for Android (recommended)
+  adaptive_icon_background: "#020617" # Your app background color
+  adaptive_icon_foreground: "assets/icon/app_icon.png"
+
+  # Optional: Remove alpha channel for iOS
+  remove_alpha_ios: true

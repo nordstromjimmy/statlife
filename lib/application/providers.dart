@@ -2,13 +2,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../application/auth/auth_controller.dart';
+import '../data/datasources/local/local_achievement_repository.dart';
 import '../data/datasources/local/local_goal_repository.dart';
 import '../data/datasources/local/local_store.dart';
 import '../data/datasources/local/local_task_repository.dart';
 import '../data/datasources/local/local_profile_repository.dart';
+import '../data/datasources/remote/supabase_achievement_datasource.dart';
 import '../data/datasources/remote/supabase_profile_datasource.dart';
 import '../data/datasources/remote/supabase_task_datasource.dart';
 import '../data/datasources/remote/supabase_goal_datasource.dart';
+import '../data/repositories/achievement_repository.dart';
 import '../data/repositories/task_repository.dart';
 import '../data/repositories/profile_repository.dart';
 import '../data/repositories/goal_repository.dart';
@@ -131,6 +134,36 @@ final goalRepositoryProvider = Provider<GoalRepository>((ref) {
   return GoalRepository(
     localRepo: localRepo,
     supabaseRepo: supabaseRepo,
+    isAuthenticated: isAuthenticated,
+    userId: userId,
+  );
+});
+
+// ============================================================================
+// ACHIEVEMENT REPOSITORY
+// ============================================================================
+
+final localAchievementRepositoryProvider = Provider<LocalAchievementRepository>(
+  (ref) {
+    final prefs = ref.watch(sharedPrefsProvider);
+    return LocalAchievementRepository(prefs: prefs);
+  },
+);
+
+final supabaseAchievementDatasourceProvider =
+    Provider<SupabaseAchievementDatasource>((ref) {
+      return SupabaseAchievementDatasource();
+    });
+
+final achievementRepositoryProvider = Provider<AchievementRepository>((ref) {
+  final localRepo = ref.read(localAchievementRepositoryProvider);
+  final supabaseRepo = ref.read(supabaseAchievementDatasourceProvider);
+  final isAuthenticated = ref.watch(isAuthenticatedProvider);
+  final userId = ref.watch(currentUserIdProvider);
+
+  return AchievementRepository(
+    localRepo: localRepo,
+    supabaseDatasource: supabaseRepo,
     isAuthenticated: isAuthenticated,
     userId: userId,
   );

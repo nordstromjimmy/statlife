@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../data/repositories/task_repository.dart';
+import '../../domain/logic/xp_generator.dart';
 import '../../domain/models/task.dart';
 import '../providers.dart';
 
@@ -64,6 +65,8 @@ class TaskController extends AsyncNotifier<List<Task>> {
         // Calculate time difference between source day and target day
         final daysDiff = targetDay.difference(sourceTask.day).inDays;
 
+        final newXp = XpGenerator.random();
+
         // Create new task with updated day and times
         final newTask = sourceTask.copyWith(
           id: const Uuid().v4(), // New unique ID
@@ -71,6 +74,8 @@ class TaskController extends AsyncNotifier<List<Task>> {
           // Shift start/end times by the same number of days
           startAt: sourceTask.startAt?.add(Duration(days: daysDiff)),
           endAt: sourceTask.endAt?.add(Duration(days: daysDiff)),
+          // New random XP
+          xp: newXp,
           // Reset completion status
           completedAt: null,
           firstCompletedAt: null,

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import '../../../domain/models/task.dart';
 import 'task_content.dart';
@@ -36,9 +38,11 @@ class TaskBlock extends StatelessWidget {
     const left = 56.0;
     const rightPadding = 1.0;
 
+    final baseColor = Theme.of(context).colorScheme.primaryContainer;
+
     final bg = task.isCompleted
-        ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.1)
-        : Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.2);
+        ? baseColor.withValues(alpha: 0.08)
+        : baseColor.withValues(alpha: 0.10);
 
     return Positioned(
       top: top,
@@ -47,20 +51,32 @@ class TaskBlock extends StatelessWidget {
       height: (height).clamp(40.0, 9999.0),
       child: GestureDetector(
         onTap: () => onEdit(task),
-        child: Container(
-          padding: const EdgeInsets.all(6),
-          decoration: BoxDecoration(
-            color: bg,
-            borderRadius: BorderRadius.circular(2),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
-          ),
-          child: TaskContent(
-            task: task,
-            start: start,
-            end: end,
-            onToggleComplete: (checked) {
-              onToggleComplete(task, checked);
-            },
+        child: ClipRRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            child: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: bg,
+                borderRadius: BorderRadius.circular(2),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.45)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: TaskContent(
+                task: task,
+                start: start,
+                end: end,
+                onToggleComplete: (checked) {
+                  onToggleComplete(task, checked);
+                },
+              ),
+            ),
           ),
         ),
       ),
