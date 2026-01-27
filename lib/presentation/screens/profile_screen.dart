@@ -346,7 +346,7 @@ class ProfileScreen extends ConsumerWidget {
                     ).textTheme.titleMedium?.copyWith(color: Colors.white70),
                   ),
                   Text(
-                    '${profile.totalXp} / ${profile.totalXp - levelInfo.xpIntoLevel + levelInfo.xpForNext}', // ✅ Shows 825/1319
+                    '${profile.totalXp} / ${profile.totalXp - levelInfo.xpIntoLevel + levelInfo.xpForNext}',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -712,39 +712,51 @@ class ProfileScreen extends ConsumerWidget {
           value: '$daysSince ${daysSince == 1 ? 'day' : 'days'}',
         ),
 
-        // Clear Data button (only for guests)
-        if (_isGuest(auth)) ...[
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            height: 56,
-            child: OutlinedButton.icon(
-              onPressed: () => _showClearDataDialog(context, ref),
-              icon: const Icon(Icons.delete_sweep),
-              label: const Text('Clear All Data'),
-              style: OutlinedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                side: BorderSide(color: Colors.orange.withValues(alpha: 0.5)),
-                foregroundColor: Colors.orange,
+        // Delete/Clear Data button (for both guest and authenticated)
+        const SizedBox(height: 16),
+        SizedBox(
+          width: double.infinity,
+          height: 56,
+          child: OutlinedButton.icon(
+            onPressed: () => _showDeleteAllDataDialog(context, ref, auth),
+            icon: const Icon(Icons.delete_sweep),
+            label: Text(_isGuest(auth) ? 'Clear All Data' : 'Reset progress'),
+            style: OutlinedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
+              side: BorderSide(color: Colors.orange.withValues(alpha: 0.5)),
+              foregroundColor: Colors.orange,
             ),
           ),
-        ],
+        ),
       ],
     );
   }
 
-  Future<void> _showClearDataDialog(BuildContext context, WidgetRef ref) async {
-    final shouldClear = await showDialog<bool>(
+  Future<void> _showDeleteAllDataDialog(
+    BuildContext context,
+    WidgetRef ref,
+    AuthState? auth,
+  ) async {
+    final isGuest = _isGuest(auth);
+
+    final shouldDelete = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Clear All Data?'),
-        content: const Text(
-          'This will permanently delete all your tasks, goals, and progress. This action cannot be undone.\n\n'
-          '💡 Tip: Create an account to save your progress in the cloud! '
-          'When you sign up, you\'ll be able to transfer this data to your new account.',
+        title: const Text('Delete All Data?'),
+        content: Text(
+          isGuest
+              ? 'This will permanently delete all your tasks, goals, and progress. This action cannot be undone.\n\n'
+                    '💡 Tip: Create an account to save your progress in the cloud! '
+                    'When you sign up, you\'ll be able to transfer this data to your new account.'
+              : 'This will permanently delete:\n'
+                    '• All tasks\n'
+                    '• All goals\n'
+                    '• All achievement progress\n'
+                    '• XP and level\n\n'
+                    'Your account will remain active but all data will be cleared.\n\n'
+                    'This action cannot be undone.',
         ),
         actions: [
           Row(
@@ -757,7 +769,7 @@ class ProfileScreen extends ConsumerWidget {
               FilledButton(
                 onPressed: () => Navigator.pop(context, true),
                 style: FilledButton.styleFrom(backgroundColor: Colors.red),
-                child: const Text('Clear All Data'),
+                child: const Text('Delete All'),
               ),
             ],
           ),
@@ -765,13 +777,17 @@ class ProfileScreen extends ConsumerWidget {
       ),
     );
 
-    if (shouldClear == true && context.mounted) {
-      await _clearAllLocalData(ref);
+    if (shouldDelete == true && context.mounted) {
+      if (isGuest) {
+        await _clearAllLocalData(ref);
+      } else {
+        await _deleteAllUserData(ref);
+      }
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('All data cleared successfully'),
+            content: Text('All data deleted successfully'),
             backgroundColor: Colors.green,
           ),
         );
@@ -802,6 +818,42 @@ class ProfileScreen extends ConsumerWidget {
 
     // Force the profile controller to rebuild with a fresh profile
     ref.invalidate(profileControllerProvider);
+  }
+
+  Future<void> _deleteAllUserData(WidgetRef ref) async {
+    // 1. Delete all tasks
+    final taskController = ref.read(taskControllerProvider.notifier);
+    final tasks = ref.read(taskControllerProvider).value ?? [];
+    for (final task in tasks) {
+      await taskController.delete(task.id);
+    }
+
+    // 2. Delete all goals
+    final goalController = ref.read(goalControllerProvider.notifier);
+    final goals = ref.read(goalControllerProvider).value ?? [];
+    for (final goal in goals) {
+      await goalController.delete(goal.id);
+    }
+
+    // 3. Reset profile (level 1, 0 XP, keep name)
+    final profileController = ref.read(profileControllerProvider.notifier);
+    await profileController.resetProgress();
+
+    // 4. Clear achievements (both local AND Supabase)
+    final supabaseAchievementDatasource = ref.read(
+      supabaseAchievementDatasourceProvider,
+    );
+    await supabaseAchievementDatasource
+        .deleteAllAchievements(); // Delete from Supabase
+
+    final achievementRepo = ref.read(achievementRepositoryProvider);
+    await achievementRepo.clear(); // Clear local cache
+
+    // 5. Force all controllers to rebuild
+    ref.invalidate(taskControllerProvider);
+    ref.invalidate(goalControllerProvider);
+    ref.invalidate(profileControllerProvider);
+    ref.invalidate(achievementControllerProvider);
   }
 
   Widget _buildInfoTile(

@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/models/achievement.dart';
 import '../../domain/models/task.dart';
-import '../../domain/models/profile.dart';
 import '../tasks/task_controller.dart';
 import '../profile/profile_controller.dart';
 import 'achievement_controller.dart';
@@ -49,8 +48,7 @@ class AchievementService {
     }
 
     // Early Bird - Complete task before 9 AM
-    if (completedTask.completedAt != null &&
-        completedTask.completedAt!.hour < 9) {
+    if (completedTask.startAt != null && completedTask.startAt!.hour < 9) {
       final earlyBird = _getAchievement(
         achievements,
         AchievementType.earlyBird,
@@ -63,8 +61,7 @@ class AchievementService {
     }
 
     // Night Owl - Complete task after 9 PM
-    if (completedTask.completedAt != null &&
-        completedTask.completedAt!.hour >= 21) {
+    if (completedTask.startAt != null && completedTask.startAt!.hour >= 21) {
       final nightOwl = _getAchievement(achievements, AchievementType.nightOwl);
       if (nightOwl != null && nightOwl.isLocked) {
         newlyUnlocked.add(

@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 import '../../data/repositories/task_repository.dart';
 import '../../domain/logic/xp_generator.dart';
 import '../../domain/models/task.dart';
+import '../achievement/achievement_service.dart';
 import '../providers.dart';
 
 final taskControllerProvider =
@@ -35,12 +36,25 @@ class TaskController extends AsyncNotifier<List<Task>> {
   }
 
   Future<void> upsert(Task task) async {
+    // Check if this is a task completion (not just an update)
+    final wasJustCompleted = task.isCompleted && task.completedAt != null;
+
     // Save to repository FIRST
     await _repo.upsert(task);
 
     // Then refetch to ensure consistency
     final updated = await _fetchAndSort();
     state = AsyncData(updated);
+
+    // Check for achievements if task was just completed
+    if (wasJustCompleted) {
+      final achievementService = ref.read(achievementServiceProvider);
+      final unlockedAchievements = await achievementService
+          .checkAfterTaskCompletion(task);
+
+      // TODO: Show celebration dialog for unlocked achievements
+      // For now, we can just print them
+    }
   }
 
   Future<void> delete(String id) async {

@@ -94,6 +94,7 @@ class XpBarState extends State<XpBar> with TickerProviderStateMixin {
   }
 
   void triggerManualLevelUp({required double newProgress}) {
+    if (!mounted) return;
     setState(() => _isLevelingUp = true);
 
     _progressAnimation = Tween<double>(begin: _currentVisualProgress, end: 1.0)
@@ -108,6 +109,7 @@ class XpBarState extends State<XpBar> with TickerProviderStateMixin {
       _currentVisualProgress = 1.0;
 
       Future.delayed(const Duration(milliseconds: 300), () {
+        if (!mounted) return;
         _progressAnimation = Tween<double>(begin: 0.0, end: newProgress)
             .animate(
               CurvedAnimation(

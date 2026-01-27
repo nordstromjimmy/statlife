@@ -21,6 +21,31 @@ class AchievementsScreen extends ConsumerWidget {
           final unlocked = achievements.where((a) => a.isUnlocked).length;
           final total = achievements.length;
 
+          // Sort by tier: Bronze → Silver → Gold → Diamond
+          final sortedAchievements = List<Achievement>.from(achievements)
+            ..sort((a, b) {
+              // First sort by tier
+              final tierOrder = {
+                AchievementTier.bronze: 0,
+                AchievementTier.silver: 1,
+                AchievementTier.gold: 2,
+                AchievementTier.diamond: 3,
+              };
+
+              final aTier = tierOrder[a.tier] ?? 0;
+              final bTier = tierOrder[b.tier] ?? 0;
+
+              if (aTier != bTier) return aTier.compareTo(bTier);
+
+              // Within same tier, unlocked achievements come first
+              if (a.isUnlocked != b.isUnlocked) {
+                return a.isUnlocked ? -1 : 1;
+              }
+
+              // Within same tier and lock status, sort by progress (highest first)
+              return b.currentProgress.compareTo(a.currentProgress);
+            });
+
           return Column(
             children: [
               // Progress Summary
@@ -84,11 +109,63 @@ class AchievementsScreen extends ConsumerWidget {
               Expanded(
                 child: ListView.separated(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: achievements.length,
+                  itemCount: sortedAchievements.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 12),
                   itemBuilder: (context, index) {
-                    final achievement = achievements[index];
-                    return _AchievementCard(achievement: achievement);
+                    final achievement = sortedAchievements[index];
+
+                    // Show tier divider when tier changes
+                    final showDivider =
+                        index == 0 ||
+                        sortedAchievements[index - 1].tier != achievement.tier;
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (showDivider) ...[
+                          if (index > 0) const SizedBox(height: 12),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Color(
+                                      achievement.tierColor,
+                                    ).withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    _getTierName(
+                                      achievement.tier,
+                                    ).toUpperCase(),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 1.2,
+                                      color: Color(achievement.tierColor),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Divider(
+                                    color: Color(
+                                      achievement.tierColor,
+                                    ).withValues(alpha: 0.3),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                        _AchievementCard(achievement: achievement),
+                      ],
+                    );
                   },
                 ),
               ),
@@ -99,6 +176,19 @@ class AchievementsScreen extends ConsumerWidget {
         error: (e, _) => Center(child: Text('Error: $e')),
       ),
     );
+  }
+
+  String _getTierName(AchievementTier tier) {
+    switch (tier) {
+      case AchievementTier.bronze:
+        return 'Bronze';
+      case AchievementTier.silver:
+        return 'Silver';
+      case AchievementTier.gold:
+        return 'Gold';
+      case AchievementTier.diamond:
+        return 'Diamond';
+    }
   }
 }
 

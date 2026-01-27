@@ -22,20 +22,10 @@ class ProfileController extends AsyncNotifier<Profile> {
 
     final isAuthenticated = userId != null;
 
-    print('🏗️ ProfileController.build() called');
-    print('   isAuthenticated: $isAuthenticated');
-    print('   userId: $userId');
-    print('   repo.isAuthenticated: ${repo.isAuthenticated}');
-    print('   repo.userId: ${repo.userId}');
-
     // Try to get from repository (checks Supabase first if authenticated)
     final existing = await repo.get();
 
     if (existing != null) {
-      print('📋 ProfileController found existing profile:');
-      print('   ID: ${existing.id}');
-      print('   Level: ${existing.level}');
-      print('   XP: ${existing.totalXp}');
       // If authenticated and profile ID doesn't match user ID, it's stale - create fresh profile
       if (isAuthenticated && existing.id != userId) {
         final now = DateTime.now();
@@ -121,5 +111,24 @@ class ProfileController extends AsyncNotifier<Profile> {
         //
       }
     }
+  }
+
+  /// Reset profile to level 1, 0 XP (keeps name and account info)
+  Future<void> resetProgress() async {
+    final currentProfile = state.value;
+    if (currentProfile == null) return;
+
+    // Create fresh profile with same ID and name
+    final resetProfile = currentProfile.copyWith(
+      totalXp: 0,
+      level: 1,
+      updatedAt: DateTime.now(),
+    );
+
+    // Save to repository (will sync to Supabase)
+    await _repo.save(resetProfile);
+
+    // Update state
+    state = AsyncData(resetProfile);
   }
 }

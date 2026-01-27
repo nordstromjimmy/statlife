@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../data/repositories/goal_repository.dart';
 import '../../domain/models/goal.dart';
+import '../achievement/achievement_service.dart';
 import '../providers.dart';
 import '../tasks/task_controller.dart';
 
@@ -12,7 +13,7 @@ final goalControllerProvider =
 class GoalController extends AsyncNotifier<List<Goal>> {
   @override
   Future<List<Goal>> build() async {
-    // ✅ Watch both auth state AND userId to rebuild when either changes
+    // Watch both auth state AND userId to rebuild when either changes
     ref.watch(isAuthenticatedProvider);
     ref.watch(currentUserIdProvider);
 
@@ -22,6 +23,8 @@ class GoalController extends AsyncNotifier<List<Goal>> {
   GoalRepository get _repo => ref.read(goalRepositoryProvider);
 
   Future<void> upsert(Goal goal) async {
+    final existingGoals = state.value ?? [];
+    final isNewGoal = !existingGoals.any((g) => g.id == goal.id);
     final current = state.value ?? [];
     final idx = current.indexWhere((g) => g.id == goal.id);
     final next = [...current];
@@ -38,6 +41,18 @@ class GoalController extends AsyncNotifier<List<Goal>> {
     // Then refetch to ensure consistency
     final updated = await _repo.getAll();
     state = AsyncData(updated);
+
+    if (isNewGoal) {
+      final achievementService = ref.read(achievementServiceProvider);
+      final unlockedAchievements = await achievementService
+          .checkAfterGoalCreation();
+
+      if (unlockedAchievements.isNotEmpty) {
+        for (final achievement in unlockedAchievements) {
+          print('🎉 Achievement Unlocked: ${achievement.title}');
+        }
+      }
+    }
   }
 
   Future<void> create({

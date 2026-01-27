@@ -15,7 +15,7 @@ class LocalTaskRepository {
         .map(Task.fromJson)
         .toList();
 
-    // ✅ Migration: ensure every task has a time span
+    // Migration: ensure every task has a time span
     var migrated = false;
     tasks = tasks.map((t) {
       if (t.startAt != null && t.endAt != null) return t;

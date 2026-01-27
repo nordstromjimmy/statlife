@@ -99,7 +99,9 @@ class SupabaseAchievementDatasource {
 
       if (data.isEmpty) return;
 
-      await _client.from('user_achievements').upsert(data);
+      await _client
+          .from('user_achievements')
+          .upsert(data, onConflict: 'user_id,achievement_type');
     } catch (e, stackTrace) {
       if (kDebugMode) {
         debugPrint('❌ Error batch upserting achievements: $e');
